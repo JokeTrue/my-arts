@@ -1,0 +1,11 @@
+tmp
+deploy
+monitoring
+k8s
+.git
+.history
+.idea
+.vscode
+Dockerfile
+.DS_Store
+vendor
