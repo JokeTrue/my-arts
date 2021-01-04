@@ -1,9 +1,10 @@
-package domain
+package users
 
 import (
+	"net/http"
+
 	appErrors "github.com/JokeTrue/my-arts/pkg/errors"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 var (

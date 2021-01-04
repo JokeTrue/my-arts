@@ -1,9 +1,10 @@
 package appErrors
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
-	"net/http"
 )
 
 type ErrorResponse struct {
@@ -13,21 +14,24 @@ type ErrorResponse struct {
 }
 
 var (
-	ErrMissingParameter   = errors.New("CMN01")
-	ErrBadParameter       = errors.New("CMN02")
-	ErrMissingPermissions = errors.New("CMN03")
+	ErrMissingParameter     = errors.New("CMN01")
+	ErrBadParameter         = errors.New("CMN02")
+	ErrMissingPermissions   = errors.New("CMN03")
+	ErrAuthenticationFailed = errors.New("CMN04")
 )
 
 var ErrorToTextMap = map[error]string{
-	ErrMissingParameter:   "Missing Parameter",
-	ErrBadParameter:       "Bad Parameter",
-	ErrMissingPermissions: "Missing Permissions",
+	ErrMissingParameter:     "Missing Parameter",
+	ErrBadParameter:         "Bad Parameter",
+	ErrMissingPermissions:   "Missing Permissions",
+	ErrAuthenticationFailed: "Authentication Failed",
 }
 
 var ErrorToHttpCodeMap = map[error]int{
-	ErrMissingParameter:   http.StatusBadRequest,
-	ErrBadParameter:       http.StatusBadRequest,
-	ErrMissingPermissions: http.StatusForbidden,
+	ErrMissingParameter:     http.StatusBadRequest,
+	ErrBadParameter:         http.StatusBadRequest,
+	ErrMissingPermissions:   http.StatusForbidden,
+	ErrAuthenticationFailed: http.StatusInternalServerError,
 }
 
 func AddTexts(texts map[error]string) {

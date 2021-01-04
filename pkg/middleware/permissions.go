@@ -1,11 +1,12 @@
 package middleware
 
 import (
+	"strings"
+
 	appErrors "github.com/JokeTrue/my-arts/pkg/errors"
 	perms "github.com/JokeTrue/my-arts/pkg/permissions"
 	gJwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"strings"
 )
 
 func CheckPermissionsMiddleware(handler func(c *gin.Context), permissions ...string) gin.HandlerFunc {
@@ -13,10 +14,9 @@ func CheckPermissionsMiddleware(handler func(c *gin.Context), permissions ...str
 		if permissions == nil {
 			handler(c)
 			return
-
 		}
-		var userPermissions []string
 
+		var userPermissions []string
 		claims := gJwt.ExtractClaims(c)
 		if claimsPerms, ok := claims["perms"]; ok && claimsPerms != nil {
 			userPermissions = strings.Split(claimsPerms.(string), ",")

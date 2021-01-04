@@ -1,14 +1,14 @@
 package jwt
 
 import (
-	"github.com/JokeTrue/my-arts/internal/users"
-	usersDomain "github.com/JokeTrue/my-arts/internal/users/domain"
-	jwt "github.com/appleboy/gin-jwt/v2"
-	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"golang.org/x/crypto/bcrypt"
 	"os"
 	"time"
+
+	"github.com/JokeTrue/my-arts/internal/models"
+	"github.com/JokeTrue/my-arts/internal/users"
+	jwt "github.com/appleboy/gin-jwt/v2"
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 const IdentityKey = "USER_PK"
@@ -20,7 +20,7 @@ type loginRequest struct {
 
 func payloadFunc(data interface{}) jwt.MapClaims {
 	claims := jwt.MapClaims{}
-	if user, ok := data.(*usersDomain.User); ok {
+	if user, ok := data.(*models.User); ok {
 		claims[IdentityKey] = user.ID
 		claims["perms"] = user.Permissions
 	}
@@ -36,10 +36,10 @@ func identityHandler(c *gin.Context) interface{} {
 		permissions = perms
 	}
 
-	return &usersDomain.User{ID: int(rawId), Permissions: permissions}
+	return &models.User{ID: int(rawId), Permissions: permissions}
 }
 
-func authenticator(store users.Service) func(c *gin.Context) (interface{}, error) {
+func authenticator(useCase users.UseCase) func(c *gin.Context) (interface{}, error) {
 	return func(c *gin.Context) (interface{}, error) {
 		var request loginRequest
 		if err := c.ShouldBind(&request); err != nil {
@@ -49,7 +49,7 @@ func authenticator(store users.Service) func(c *gin.Context) (interface{}, error
 		email := request.Username
 		password := request.Password
 
-		user, err := store.GetUserByEmail(email)
+		user, err := useCase.GetUserByEmail(email)
 		if err != nil {
 			return nil, jwt.ErrFailedAuthentication
 		}
@@ -62,13 +62,12 @@ func authenticator(store users.Service) func(c *gin.Context) (interface{}, error
 	}
 }
 
-func GetJWTMiddleware(db *sqlx.DB) (*jwt.GinJWTMiddleware, error) {
+func GetJWTMiddleware(useCase users.UseCase) (*jwt.GinJWTMiddleware, error) {
 	secretKey := os.Getenv("SECRET_KEY")
-	service := usersDomain.NewService(usersDomain.NewStore(db))
 	middleware := &jwt.GinJWTMiddleware{
 		PayloadFunc:     payloadFunc,
 		IdentityHandler: identityHandler,
-		Authenticator:   authenticator(service),
+		Authenticator:   authenticator(useCase),
 		MaxRefresh:      time.Hour,
 		IdentityKey:     IdentityKey,
 		Key:             []byte(secretKey),

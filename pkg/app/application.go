@@ -1,18 +1,23 @@
 package app
 
 import (
-	"github.com/JokeTrue/my-arts/internal/users"
-	"github.com/JokeTrue/my-arts/pkg/jwt"
-	"github.com/gin-gonic/gin"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/jmoiron/sqlx"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	"github.com/JokeTrue/my-arts/internal/users"
+	usersDelivery "github.com/JokeTrue/my-arts/internal/users/delivery/http"
+	"github.com/JokeTrue/my-arts/internal/users/repository/mysql"
+	"github.com/JokeTrue/my-arts/internal/users/usecase"
+	"github.com/JokeTrue/my-arts/pkg/jwt"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/jmoiron/sqlx"
+	"github.com/pkg/errors"
+
 	"github.com/JokeTrue/my-arts/pkg/logging"
+	_ "github.com/JokeTrue/my-arts/pkg/tzinit" // Set TZ to UTC
 )
 
 type Application struct {
@@ -21,40 +26,28 @@ type Application struct {
 	router *gin.Engine
 	logger logging.Logger
 
-	userRouter *users.Router
+	usersUseCase users.UseCase
 }
 
 func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Application {
-	router := gin.Default()
-
 	application := &Application{
 		debug:  debug,
 		logger: logger,
-		router: router,
+		router: gin.Default(),
 	}
 
+	// 1. Setup Database
 	application.setupDB(dbDSN)
-	if application.debug {
-		application.setupMockData("db/mock_data/")
-	}
+	application.setupMockData("db/mock_data/")
 
-	authMiddleware, err := jwt.GetJWTMiddleware(application.db)
-	if err != nil {
-		application.logger.WithError(err).Panic("failed to setup jwt")
-	}
+	// 2. Setup UseCases + Endpoints
+	application.setupUseCases()
 
-	// Auth
-	router.POST("/login", authMiddleware.LoginHandler)
+	// 3. Setup JWT Authentication
+	apiGroup := application.setupJWT()
 
-	apiGroup := router.Group("/api")
-	apiGroup.Use(authMiddleware.MiddlewareFunc())
-	{
-		// Setup JWT Handlers
-		apiGroup.GET("/auth/refresh_token", authMiddleware.RefreshHandler)
-
-		// Setup Users Router
-		users.NewRouter(application.db, logger).SetupRoutes(apiGroup)
-	}
+	// 4. Setup HTTP Endpoints
+	usersDelivery.RegisterHTTPEndpoints(apiGroup, application.usersUseCase)
 
 	return application
 }
@@ -72,8 +65,28 @@ func (a *Application) Stop() {
 	}
 }
 
+func (a *Application) setupUseCases() {
+	// Users
+	usersRepository := mysql.NewUsersRepository(a.db)
+	a.usersUseCase = usecase.NewUsersUseCase(usersRepository)
+}
+
+func (a *Application) setupJWT() *gin.RouterGroup {
+	authMiddleware, err := jwt.GetJWTMiddleware(a.usersUseCase)
+	if err != nil {
+		a.logger.WithError(err).Panic("failed to setup jwt")
+	}
+	a.router.POST("/login", authMiddleware.LoginHandler)
+
+	apiGroup := a.router.Group("/api")
+	apiGroup.Use(authMiddleware.MiddlewareFunc())
+	apiGroup.GET("/auth/refresh_token", authMiddleware.RefreshHandler)
+
+	return apiGroup
+}
+
 func (a *Application) setupDB(databaseDSN string) {
-	db, err := sqlx.Connect("mysql", databaseDSN)
+	db, err := sqlx.Connect("mysql", databaseDSN+"?parseTime=true")
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup db connection")
 	}
@@ -91,8 +104,11 @@ func (a *Application) setupDB(databaseDSN string) {
 }
 
 func (a *Application) setupMockData(mockPath string) {
-	var files []string
+	if !a.debug {
+		return
+	}
 
+	var files []string
 	if err := filepath.Walk(mockPath, func(path string, info os.FileInfo, err error) error {
 		if info.IsDir() {
 			return nil
@@ -112,13 +128,13 @@ func (a *Application) setupMockData(mockPath string) {
 		script, err := ioutil.ReadFile(file)
 		if err != nil {
 			a.logger.WithError(err).Error("failed to load mock data")
-			tx.Rollback()
+			_ = tx.Rollback()
 			return
 		}
 
 		if _, err := a.db.Exec(string(script)); err != nil {
 			a.logger.WithError(err).Error("failed to load mock data")
-			tx.Rollback()
+			_ = tx.Rollback()
 			return
 		}
 	}
