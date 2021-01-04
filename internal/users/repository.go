@@ -5,10 +5,11 @@ import (
 )
 
 type Repository interface {
-	Delete(id int) error
+	Create(user models.User) (int, error)              // C
+	GetUserByID(id int) (*models.User, error)          // R
+	GetUserByEmail(email string) (*models.User, error) // R
+	Update(user models.User) (*models.User, error)     // U
+	Delete(id int) error                               // D
+
 	GetUsers() ([]models.User, error)
-	Create(user models.User) (int, error)
-	GetUserByID(id int) (*models.User, error)
-	Update(user models.User) (*models.User, error)
-	GetUserByEmail(email string) (*models.User, error)
 }

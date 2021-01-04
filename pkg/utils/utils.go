@@ -13,7 +13,6 @@ func Contains(slice []string, lookup string) bool {
 	return false
 }
 
-
 func Try(err error) {
 	if err != nil {
 		panic(err)

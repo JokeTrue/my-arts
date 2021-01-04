@@ -6,10 +6,15 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/JokeTrue/my-arts/internal/products"
+
+	productsDelivery "github.com/JokeTrue/my-arts/internal/products/delivery/http"
+	productsRepo "github.com/JokeTrue/my-arts/internal/products/repository/mysql"
+	productsUseCase "github.com/JokeTrue/my-arts/internal/products/usecase"
 	"github.com/JokeTrue/my-arts/internal/users"
 	usersDelivery "github.com/JokeTrue/my-arts/internal/users/delivery/http"
-	"github.com/JokeTrue/my-arts/internal/users/repository/mysql"
-	"github.com/JokeTrue/my-arts/internal/users/usecase"
+	usersRepo "github.com/JokeTrue/my-arts/internal/users/repository/mysql"
+	usersUseCase "github.com/JokeTrue/my-arts/internal/users/usecase"
 	"github.com/JokeTrue/my-arts/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
@@ -26,14 +31,18 @@ type Application struct {
 	router *gin.Engine
 	logger logging.Logger
 
-	usersUseCase users.UseCase
+	usersUseCase    users.UseCase
+	productsUseCase products.UseCase
 }
 
 func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Application {
+	router := gin.Default()
+	router.Use(gin.Recovery())
+
 	application := &Application{
 		debug:  debug,
 		logger: logger,
-		router: gin.Default(),
+		router: router,
 	}
 
 	// 1. Setup Database
@@ -48,6 +57,7 @@ func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Applicatio
 
 	// 4. Setup HTTP Endpoints
 	usersDelivery.RegisterHTTPEndpoints(apiGroup, application.usersUseCase)
+	productsDelivery.RegisterHTTPEndpoints(apiGroup, application.productsUseCase)
 
 	return application
 }
@@ -67,8 +77,12 @@ func (a *Application) Stop() {
 
 func (a *Application) setupUseCases() {
 	// Users
-	usersRepository := mysql.NewUsersRepository(a.db)
-	a.usersUseCase = usecase.NewUsersUseCase(usersRepository)
+	usersRepository := usersRepo.NewUsersRepository(a.db)
+	a.usersUseCase = usersUseCase.NewUsersUseCase(usersRepository)
+
+	// Products
+	productsRepository := productsRepo.NewProductsRepository(a.db)
+	a.productsUseCase = productsUseCase.NewProductsUseCase(productsRepository)
 }
 
 func (a *Application) setupJWT() *gin.RouterGroup {

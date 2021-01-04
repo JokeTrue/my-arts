@@ -1,9 +1,10 @@
 package tzinit
 
 import (
-	"github.com/JokeTrue/my-arts/pkg/utils"
 	"os"
 	"time"
+
+	"github.com/JokeTrue/my-arts/pkg/utils"
 )
 
 func init() {

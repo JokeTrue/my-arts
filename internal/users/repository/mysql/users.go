@@ -17,7 +17,7 @@ func NewUsersRepository(db *sqlx.DB) *UsersRepository {
 }
 
 func (r *UsersRepository) Delete(id int) error {
-	res, err := r.db.Exec("DELETE from users where id = ?", id)
+	res, err := r.db.Exec(QueryDeleteUser, id)
 	if err != nil {
 		return users.ErrUserQuery
 	}
