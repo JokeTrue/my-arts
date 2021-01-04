@@ -12,6 +12,7 @@ func RegisterHTTPEndpoints(router *gin.RouterGroup, useCase products.UseCase) {
 	{
 		group.GET("/list", handler.GetProducts)
 		group.POST("/product", handler.NotImplemented)
+		group.GET("/user_list/:user_id", handler.GetUserProducts)
 		group.GET("/product/:product_id", handler.GetProduct)
 		group.PUT("/product/:product_id", handler.NotImplemented)
 		group.DELETE("/product/:product_id", handler.DeleteProduct)

@@ -22,6 +22,12 @@ var (
 		StateSold,
 		StateInProgress,
 	}
+	AllowedForUserSearchStates = []string{
+		StateNew,
+		StateInProgress,
+		StateSold,
+		StateArchived,
+	}
 )
 
 type Product struct {

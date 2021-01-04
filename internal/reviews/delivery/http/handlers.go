@@ -20,19 +20,13 @@ func NewHandler(useCase reviews.UseCase) *Handler {
 }
 
 func (h *Handler) Delete(c *gin.Context) {
-	rawReviewId := c.Param("review_id")
-	reviewId, err := strconv.Atoi(rawReviewId)
+	review, err := CheckObjectPermissions(c, h.useCase)
 	if err != nil {
-		appErrors.JSONError(c, err, rawReviewId)
+		appErrors.JSONError(c, err, nil)
 		return
 	}
 
-	if _, err = CheckObjectPermissions(c, h.useCase); err != nil {
-		appErrors.JSONError(c, err, reviewId)
-		return
-	}
-
-	err = h.useCase.Delete(reviewId)
+	err = h.useCase.Delete(review.ID)
 	if err != nil {
 		appErrors.JSONError(c, err, nil)
 		return
