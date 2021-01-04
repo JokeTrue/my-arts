@@ -10,8 +10,9 @@ const (
 	FROM products
 	LEFT JOIN categories c on c.id = products.category_id
 	WHERE products.id = ?`
-	QueryGetProductPhotos = `SELECT * FROM product_photos WHERE product_id IN (%s)`
+
 	QueryGetProductTags   = `SELECT * FROM product_tags WHERE product_id IN (%s)`
+	QueryGetProductPhotos = `SELECT * FROM product_photos WHERE product_id IN (%s)`
 
 	QueryDeleteProduct       = `DELETE FROM products WHERE id = ?`
 	QueryDeleteProductPhotos = `DELETE FROM product_photos WHERE product_id = ?`

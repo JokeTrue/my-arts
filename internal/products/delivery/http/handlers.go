@@ -58,10 +58,12 @@ func (h *Handler) GetProducts(c *gin.Context) {
 		states       []string
 		productsList []*models.Product
 	)
+
 	if rawStates := c.Query("states"); rawStates != "" {
 		states = strings.Split(rawStates, ",")
 	}
-	if err = ValidateProductState(states); err != nil {
+	states, err = ValidateProductStates(states)
+	if err != nil {
 		appErrors.JSONError(c, err, states)
 		return
 	}

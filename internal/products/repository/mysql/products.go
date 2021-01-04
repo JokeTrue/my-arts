@@ -34,7 +34,6 @@ func (r *ProductsRepository) GetProduct(id int) (*models.Product, error) {
 	if err := r.setProductsPhotos(&product); err != nil {
 		return nil, err
 	}
-
 	if err := r.setProductsTags(&product); err != nil {
 		return nil, err
 	}
@@ -42,7 +41,7 @@ func (r *ProductsRepository) GetProduct(id int) (*models.Product, error) {
 	return &product, nil
 }
 
-func (r *ProductsRepository) Update(product models.Product) (int, error) {
+func (r *ProductsRepository) Update(product models.Product) (*models.Product, error) {
 	panic("implement me")
 }
 
@@ -83,7 +82,6 @@ func (r *ProductsRepository) GetProducts(states []string) ([]*models.Product, er
 	if err := r.setProductsPhotos(list...); err != nil {
 		return nil, err
 	}
-
 	if err := r.setProductsTags(list...); err != nil {
 		return nil, err
 	}
@@ -105,7 +103,6 @@ func (r *ProductsRepository) GetUserProducts(userId int, states []string) ([]*mo
 	if err := r.setProductsPhotos(list...); err != nil {
 		return nil, err
 	}
-
 	if err := r.setProductsTags(list...); err != nil {
 		return nil, err
 	}

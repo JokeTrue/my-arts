@@ -25,12 +25,9 @@ import (
 var appName = "my-arts-backend"
 
 var (
-	addr        string
-	databaseDSN string
-	debug       bool
-
-	connectTimeout  time.Duration
-	requestTimeout  time.Duration
+	addr            string
+	databaseDSN     string
+	debug           bool
 	shutdownTimeout time.Duration
 )
 
@@ -38,8 +35,6 @@ func init() {
 	flag.BoolVar(&debug, "debug", false, "Debug Mode")
 	flag.StringVar(&addr, "addr", ":9080", "App addr")
 	flag.StringVar(&databaseDSN, "db-dsn", "", "Database DSN")
-	flag.DurationVar(&requestTimeout, "request-timeout", 25*time.Second, "Request timeout")
-	flag.DurationVar(&connectTimeout, "connect-timeout", 25*time.Second, "Connection timeout")
 	flag.DurationVar(&shutdownTimeout, "shutdown-timeout", 30*time.Second, "Graceful shutdown timeout")
 
 	if err := godotenv.Load(); err != nil {

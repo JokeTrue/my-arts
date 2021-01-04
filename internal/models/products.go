@@ -10,13 +10,19 @@ const (
 	StateArchived   = "ARCHIVED"
 )
 
-var AllProductStates = []string{
-	StateNew,
-	StateInProgress,
-	StateSold,
-	StateClosed,
-	StateArchived,
-}
+var (
+	AllProductStates = []string{
+		StateNew,
+		StateInProgress,
+		StateSold,
+		StateClosed,
+		StateArchived,
+	}
+	AllowedForSearchStates = []string{
+		StateSold,
+		StateInProgress,
+	}
+)
 
 type Product struct {
 	ID                 int       `json:"id" db:"id"`

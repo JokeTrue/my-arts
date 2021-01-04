@@ -6,11 +6,16 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/JokeTrue/my-arts/internal/reviews"
+
 	"github.com/JokeTrue/my-arts/internal/products"
 
 	productsDelivery "github.com/JokeTrue/my-arts/internal/products/delivery/http"
 	productsRepo "github.com/JokeTrue/my-arts/internal/products/repository/mysql"
 	productsUseCase "github.com/JokeTrue/my-arts/internal/products/usecase"
+	reviewsDelivery "github.com/JokeTrue/my-arts/internal/reviews/delivery/http"
+	reviewsRepo "github.com/JokeTrue/my-arts/internal/reviews/repository/mysql"
+	reviewsUseCase "github.com/JokeTrue/my-arts/internal/reviews/usecase"
 	"github.com/JokeTrue/my-arts/internal/users"
 	usersDelivery "github.com/JokeTrue/my-arts/internal/users/delivery/http"
 	usersRepo "github.com/JokeTrue/my-arts/internal/users/repository/mysql"
@@ -33,6 +38,7 @@ type Application struct {
 
 	usersUseCase    users.UseCase
 	productsUseCase products.UseCase
+	reviewsUseCase  reviews.UseCase
 }
 
 func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Application {
@@ -47,7 +53,7 @@ func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Applicatio
 
 	// 1. Setup Database
 	application.setupDB(dbDSN)
-	application.setupMockData("db/mock_data/")
+	//application.setupMockData("db/mock_data/")
 
 	// 2. Setup UseCases + Endpoints
 	application.setupUseCases()
@@ -58,6 +64,7 @@ func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Applicatio
 	// 4. Setup HTTP Endpoints
 	usersDelivery.RegisterHTTPEndpoints(apiGroup, application.usersUseCase)
 	productsDelivery.RegisterHTTPEndpoints(apiGroup, application.productsUseCase)
+	reviewsDelivery.RegisterHTTPEndpoints(apiGroup, application.reviewsUseCase)
 
 	return application
 }
@@ -83,6 +90,10 @@ func (a *Application) setupUseCases() {
 	// Products
 	productsRepository := productsRepo.NewProductsRepository(a.db)
 	a.productsUseCase = productsUseCase.NewProductsUseCase(productsRepository)
+
+	// Reviews
+	reviewsRepository := reviewsRepo.NewProductsRepository(a.db)
+	a.reviewsUseCase = reviewsUseCase.NewReviewsUseCase(reviewsRepository)
 }
 
 func (a *Application) setupJWT() *gin.RouterGroup {

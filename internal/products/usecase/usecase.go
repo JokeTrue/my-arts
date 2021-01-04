@@ -21,7 +21,7 @@ func (u *ProductsUseCase) GetProduct(id int) (*models.Product, error) {
 	return u.repo.GetProduct(id)
 }
 
-func (u *ProductsUseCase) Update(product models.Product) (int, error) {
+func (u *ProductsUseCase) Update(product models.Product) (*models.Product, error) {
 	return u.repo.Update(product)
 }
 
