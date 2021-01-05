@@ -6,20 +6,26 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/JokeTrue/my-arts/internal/reviews"
-
 	"github.com/JokeTrue/my-arts/internal/products"
-
 	productsDelivery "github.com/JokeTrue/my-arts/internal/products/delivery/http"
 	productsRepo "github.com/JokeTrue/my-arts/internal/products/repository/mysql"
 	productsUseCase "github.com/JokeTrue/my-arts/internal/products/usecase"
+
+	"github.com/JokeTrue/my-arts/internal/reviews"
 	reviewsDelivery "github.com/JokeTrue/my-arts/internal/reviews/delivery/http"
 	reviewsRepo "github.com/JokeTrue/my-arts/internal/reviews/repository/mysql"
 	reviewsUseCase "github.com/JokeTrue/my-arts/internal/reviews/usecase"
+
 	"github.com/JokeTrue/my-arts/internal/users"
 	usersDelivery "github.com/JokeTrue/my-arts/internal/users/delivery/http"
 	usersRepo "github.com/JokeTrue/my-arts/internal/users/repository/mysql"
 	usersUseCase "github.com/JokeTrue/my-arts/internal/users/usecase"
+
+	"github.com/JokeTrue/my-arts/internal/categories"
+	categoriesDelivery "github.com/JokeTrue/my-arts/internal/categories/delivery/http"
+	categoriesRepo "github.com/JokeTrue/my-arts/internal/categories/repository/mysql"
+	categoriesUseCase "github.com/JokeTrue/my-arts/internal/categories/usecase"
+
 	"github.com/JokeTrue/my-arts/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
@@ -36,9 +42,10 @@ type Application struct {
 	router *gin.Engine
 	logger logging.Logger
 
-	usersUseCase    users.UseCase
-	productsUseCase products.UseCase
-	reviewsUseCase  reviews.UseCase
+	usersUseCase      users.UseCase
+	productsUseCase   products.UseCase
+	reviewsUseCase    reviews.UseCase
+	categoriesUseCase categories.UseCase
 }
 
 func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Application {
@@ -65,6 +72,7 @@ func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Applicatio
 	usersDelivery.RegisterHTTPEndpoints(apiGroup, application.usersUseCase)
 	productsDelivery.RegisterHTTPEndpoints(apiGroup, application.productsUseCase)
 	reviewsDelivery.RegisterHTTPEndpoints(apiGroup, application.reviewsUseCase)
+	categoriesDelivery.RegisterHTTPEndpoints(apiGroup, application.categoriesUseCase)
 
 	return application
 }
@@ -94,6 +102,10 @@ func (a *Application) setupUseCases() {
 	// Reviews
 	reviewsRepository := reviewsRepo.NewProductsRepository(a.db)
 	a.reviewsUseCase = reviewsUseCase.NewReviewsUseCase(reviewsRepository)
+
+	// Categories
+	categoriesRepository := categoriesRepo.NewCategoriesRepository(a.db)
+	a.categoriesUseCase = categoriesUseCase.NewCategoriesUseCase(categoriesRepository)
 }
 
 func (a *Application) setupJWT() *gin.RouterGroup {
