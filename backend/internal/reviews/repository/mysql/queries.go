@@ -10,7 +10,7 @@ const (
 	LEFT JOIN users reviewer on reviewer.id = reviews.reviewer_id
 	WHERE reviews.id = ?`
 
-	QueryDeleteReview   = `DELETE FROM reviews WHERE id = ?`
+	QueryDeleteReview = `DELETE FROM reviews WHERE id = ?`
 
 	QueryGetUserReviews = `
 	SELECT reviews.*,

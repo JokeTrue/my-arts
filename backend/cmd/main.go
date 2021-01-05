@@ -4,10 +4,8 @@ import (
 	"flag"
 	"time"
 
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
-
 	"github.com/JokeTrue/my-arts/pkg/middleware"
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/JokeTrue/my-arts/pkg/app"
 
@@ -36,10 +34,6 @@ func init() {
 	flag.StringVar(&addr, "addr", ":9080", "App addr")
 	flag.StringVar(&databaseDSN, "db-dsn", "", "Database DSN")
 	flag.DurationVar(&shutdownTimeout, "shutdown-timeout", 30*time.Second, "Graceful shutdown timeout")
-
-	if err := godotenv.Load(); err != nil {
-		panic("Error loading .env file")
-	}
 }
 
 func main() {

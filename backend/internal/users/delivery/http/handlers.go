@@ -7,6 +7,7 @@ import (
 	"github.com/JokeTrue/my-arts/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type Handler struct {
@@ -18,19 +19,46 @@ func NewHandler(useCase users.UseCase) *Handler {
 }
 
 func (h *Handler) CreateUser(c *gin.Context) {
-	var user models.User
-	if err := c.BindJSON(&user); err != nil {
+	var request SignUpRequest
+	if err := c.BindJSON(&request); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 
-	userId, err := h.useCase.Create(user)
+	if request.Password1 != request.Password2 {
+		appErrors.JSONError(c, users.ErrUserPasswordsDontMatch, nil)
+		return
+	}
+
+	existingUser, err := h.useCase.GetUserByEmail(request.Email)
+	if err != nil && err != users.ErrUserNotFound {
+		appErrors.JSONError(c, err, nil)
+		return
+	}
+	if existingUser != nil {
+		appErrors.JSONError(c, users.ErrUserAlreadyExists, nil)
+		return
+	}
+
+	user := models.User{
+		Email:     request.Email,
+		Password:  request.Password1,
+		FirstName: request.FirstName,
+		LastName:  request.LastName,
+		Age:       request.Age,
+		Gender:    request.Gender,
+		Location:  request.Location,
+		Biography: request.Biography,
+		CreatedAt: time.Now(),
+	}
+
+	user.ID, err = h.useCase.Create(user)
 	if err != nil {
 		appErrors.JSONError(c, err, user)
 		return
 	}
 
-	c.JSON(http.StatusCreated, map[string]int{"user_id": userId})
+	c.JSON(http.StatusCreated, user)
 }
 
 func (h *Handler) GetCurrentUser(c *gin.Context) {

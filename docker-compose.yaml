@@ -2,12 +2,13 @@ version: "3.3"
 
 services:
   my-arts-backend:
-    container_name: my-arts
+    container_name: my-arts-backend
     build:
       context: .
-      dockerfile: ./docker/Dockerfile
+      dockerfile: backend/docker/Dockerfile
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       LOG_LEVEL: "info"
+      SECRET_KEY: "4Ty*fy^PdY=/1I;5PI]d&3|m2%Xe[B"

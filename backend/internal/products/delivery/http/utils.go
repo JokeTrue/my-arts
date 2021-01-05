@@ -13,7 +13,7 @@ func ValidateProductStates(states []string, allowedStates []string) ([]string, e
 	validatedStates := make([]string, 0, len(states))
 	for _, state := range states {
 		if !utils.Contains(models.AllProductStates, state) {
-			return nil, products.ErrUnknownProductState
+			return nil, products.ErrProductUnknownState
 		}
 		if utils.Contains(allowedStates, state) {
 			validatedStates = append(validatedStates, state)
@@ -39,11 +39,9 @@ func CheckObjectPermissions(c *gin.Context, useCase products.UseCase) (*models.P
 		return nil, err
 	}
 
-	if product.UserID == userId {
-
+	if product.UserID != userId {
+		return nil, products.ErrProductNotFound
 	}
-
-	//TODO Permissions CHECKS
 
 	return product, nil
 }

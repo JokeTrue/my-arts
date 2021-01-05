@@ -75,7 +75,7 @@ func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Applicatio
 	apiGroup := application.setupJWT()
 
 	// 4. Setup HTTP Endpoints
-	usersDelivery.RegisterHTTPEndpoints(apiGroup, application.usersUseCase)
+	usersDelivery.RegisterHTTPEndpoints(apiGroup, application.router, application.usersUseCase)
 	productsDelivery.RegisterHTTPEndpoints(apiGroup, application.productsUseCase)
 	reviewsDelivery.RegisterHTTPEndpoints(apiGroup, application.reviewsUseCase)
 	categoriesDelivery.RegisterHTTPEndpoints(apiGroup, application.categoriesUseCase)
@@ -123,7 +123,7 @@ func (a *Application) setupJWT() *gin.RouterGroup {
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup jwt")
 	}
-	a.router.POST("/login", authMiddleware.LoginHandler)
+	a.router.POST("/api/login", authMiddleware.LoginHandler)
 
 	apiGroup := a.router.Group("/api")
 	apiGroup.Use(authMiddleware.MiddlewareFunc())
