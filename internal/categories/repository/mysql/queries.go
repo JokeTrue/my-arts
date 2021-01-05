@@ -1,7 +1,7 @@
 package mysql
 
 const (
-	QueryDeleteReview = `DELETE FROM categories WHERE id = ?`
+	QueryDeleteCategory = `DELETE FROM categories WHERE id = ?`
 
 	QueryGetCategories = `SELECT * FROM categories ORDER BY title`
 

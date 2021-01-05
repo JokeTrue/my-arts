@@ -26,6 +26,11 @@ import (
 	categoriesRepo "github.com/JokeTrue/my-arts/internal/categories/repository/mysql"
 	categoriesUseCase "github.com/JokeTrue/my-arts/internal/categories/usecase"
 
+	"github.com/JokeTrue/my-arts/internal/tags"
+	tagsDelivery "github.com/JokeTrue/my-arts/internal/tags/delivery/http"
+	tagsRepo "github.com/JokeTrue/my-arts/internal/tags/repository/mysql"
+	tagsUseCase "github.com/JokeTrue/my-arts/internal/tags/usecase"
+
 	"github.com/JokeTrue/my-arts/pkg/jwt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
@@ -46,6 +51,7 @@ type Application struct {
 	productsUseCase   products.UseCase
 	reviewsUseCase    reviews.UseCase
 	categoriesUseCase categories.UseCase
+	tagsUseCase       tags.UseCase
 }
 
 func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Application {
@@ -73,6 +79,7 @@ func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Applicatio
 	productsDelivery.RegisterHTTPEndpoints(apiGroup, application.productsUseCase)
 	reviewsDelivery.RegisterHTTPEndpoints(apiGroup, application.reviewsUseCase)
 	categoriesDelivery.RegisterHTTPEndpoints(apiGroup, application.categoriesUseCase)
+	tagsDelivery.RegisterHTTPEndpoints(apiGroup, application.tagsUseCase)
 
 	return application
 }
@@ -106,6 +113,9 @@ func (a *Application) setupUseCases() {
 	// Categories
 	categoriesRepository := categoriesRepo.NewCategoriesRepository(a.db)
 	a.categoriesUseCase = categoriesUseCase.NewCategoriesUseCase(categoriesRepository)
+
+	tagsRepository := tagsRepo.NewTagsRepository(a.db)
+	a.tagsUseCase = tagsUseCase.NewTagsUseCase(tagsRepository)
 }
 
 func (a *Application) setupJWT() *gin.RouterGroup {

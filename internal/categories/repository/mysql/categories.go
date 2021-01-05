@@ -16,7 +16,7 @@ func NewCategoriesRepository(db *sqlx.DB) *CategoriesRepository {
 }
 
 func (r *CategoriesRepository) Delete(id int) error {
-	res, err := r.db.Exec(QueryDeleteReview, id)
+	res, err := r.db.Exec(QueryDeleteCategory, id)
 	if err != nil {
 		return categories.ErrCategoryQuery
 	}
