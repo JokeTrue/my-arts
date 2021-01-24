@@ -1,0 +1,46 @@
+
+.login_form {
+  padding: 15px 30px;
+  border-radius: 15px;
+  background-color: #e2e8f0;
+
+  &_social {
+    padding: 15px 0;
+
+    button {
+      border-radius: 4px;
+      padding: 4px 20px;
+      font-weight: 700;
+      color: #2d3748;
+    }
+
+    .sign_in_text {
+      font-size: 16px;
+      text-align: center;
+      font-weight: 500;
+      color: #4a5568;
+    }
+  }
+
+  &_submit {
+    height: 45px;
+    font-weight: 700;
+    background-color: #000;
+    text-transform: uppercase;
+  }
+
+  .ant-form-item-label > label.ant-form-item-required:before {
+    content: unset;
+  }
+
+  .ant-form-item-label {
+    font-weight: 700;
+    text-transform: uppercase;
+
+    label {
+      color: #4a5568 !important;
+    }
+  }
+
+
+}
