@@ -1,5 +1,6 @@
-import { notification } from "antd";
 import React from "react";
+
+import { notification } from "antd";
 
 const openNotification = (type, title, description) => {
   notification[type]({

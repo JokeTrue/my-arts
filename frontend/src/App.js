@@ -1,20 +1,26 @@
-import { Layout } from "antd";
-import React, { Component } from "react";
+import React from "react";
+
 import { connect } from "react-redux";
 import { Router } from "react-router-dom";
+
+import Routes from "./routes";
+import { history } from "./helpers/history";
+import { fetchCurrentUser } from "./store/actions/auth";
+
+import { Layout } from "antd";
+import Sidebar from "./components/Sidebar";
 
 import "antd/dist/antd.css";
 import "./index.css";
 
-import Sidebar from "./components/Sidebar";
-import { history } from "./helpers/history";
-import Routes from "./routes";
-import { fetchCurrentUser, logout } from "./store/actions/auth";
-
 const { Content, Footer, Header } = Layout;
 
 @connect((store) => ({ authStore: store.Auth }))
-class App extends Component {
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
   componentDidMount() {
     const { isLoggedIn } = this.props.authStore;
     const token = localStorage.getItem("token");
@@ -24,15 +30,11 @@ class App extends Component {
     }
   }
 
-  logOut() {
-    this.props.dispatch(logout());
-  }
-
   render() {
     return (
       <Router history={history}>
         <Layout style={{ minHeight: "100vh" }}>
-          {this.props.authStore.user && <Sidebar />}
+          {this.props.authStore.user && <Sidebar logOut={this.logOut} />}
           <Layout className="app_layout">
             {this.props.authStore.user && (
               <Header style={{ background: "#fff", padding: 0 }} />
@@ -41,7 +43,7 @@ class App extends Component {
               <Routes />
             </Content>
             <Footer style={{ textAlign: "center" }}>
-              Ant Design ©2018 Created by Ant UED
+              MyArts ©2021 Created by Pavel Petrov
             </Footer>
           </Layout>
         </Layout>

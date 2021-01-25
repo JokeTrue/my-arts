@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"database/sql"
 	"os"
 	"time"
 
@@ -36,7 +37,7 @@ func identityHandler(c *gin.Context) interface{} {
 		permissions = perms
 	}
 
-	return &models.User{ID: int(rawId), Permissions: permissions}
+	return &models.User{ID: int(rawId), Permissions: sql.NullString{String: permissions, Valid: true}}
 }
 
 func authenticator(useCase users.UseCase) func(c *gin.Context) (interface{}, error) {

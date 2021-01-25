@@ -1,4 +1,4 @@
-.login_form__header {
+.signup_form__header {
   display: flex;
   justify-content: center;
   width: 100%;
@@ -16,7 +16,7 @@
   }
 }
 
-.login_form {
+.signup_form {
   box-shadow: 0 3px 5px 0 hsl(0deg 0% 68% / 50%);
   background: #fff;
   padding: 35px 44px 40px;
@@ -79,11 +79,4 @@
   }
 
 
-}
-
-.login_form__footer {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 19px;
-  font-weight: 700;
 }

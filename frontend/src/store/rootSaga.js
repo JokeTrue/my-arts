@@ -1,10 +1,14 @@
-import { all, fork } from 'redux-saga/effects';
+import { all, fork } from "redux-saga/effects";
 
-import { watchFetchToken, watchFetchCurrentUser } from "./sagas/auth";
-
+import {
+  watchFetchCurrentUser,
+  watchFetchToken,
+  watchSignUp,
+} from "./sagas/auth";
 
 export default function* rootSaga() {
   yield all([
+    fork(watchSignUp),
     fork(watchFetchToken),
     fork(watchFetchCurrentUser),
   ]);

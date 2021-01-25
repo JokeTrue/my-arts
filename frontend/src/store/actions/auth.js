@@ -21,12 +21,12 @@ export const fetchCurrentUser = () => ({
   type: FETCH_CURRENT_USER,
 });
 
-export const signUp = (username, password) => ({
+export const signUp = (values) => ({
   type: SIGN_UP,
-  payload: { username, password },
+  payload: values,
 });
 
-export const logout = () => (dispatch) => {
+export const logout = () => {
   localStorage.removeItem("token");
-  dispatch({ type: LOGOUT });
+  window.location.reload();
 };

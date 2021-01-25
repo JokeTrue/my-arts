@@ -1,23 +1,32 @@
+import React from "react";
+
+import { connect } from "react-redux";
+import { Layout, Menu } from "antd";
+
+import { logout } from "../../store/actions/auth";
+
 import {
   DesktopOutlined,
   FileOutlined,
+  LogoutOutlined,
   PieChartFilled,
   TeamOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu } from "antd";
-import "antd/dist/antd.css";
-import React from "react";
 import "./index.css";
-
 
 const { Sider } = Layout;
 const { SubMenu } = Menu;
 
+@connect((store) => ({ authStore: store.Auth }))
 class Sidebar extends React.Component {
   state = {
     collapsed: false,
   };
+
+  constructor(props) {
+    super(props);
+  }
 
   onCollapse = (collapsed) => {
     this.setState({ collapsed });
@@ -68,6 +77,13 @@ class Sidebar extends React.Component {
           <Menu.Item key="9">
             <FileOutlined />
             <span>File</span>
+          </Menu.Item>
+          <Menu.Item
+            key="logout"
+            onClick={(e) => this.props.dispatch(logout())}
+          >
+            <LogoutOutlined />
+            <span>Log out</span>
           </Menu.Item>
         </Menu>
       </Sider>

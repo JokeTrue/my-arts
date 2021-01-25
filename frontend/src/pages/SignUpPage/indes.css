@@ -1,11 +1,11 @@
-.login_form__header {
+.signup_form__header {
   display: flex;
   justify-content: center;
   width: 100%;
   margin-bottom: 15px;
   text-align: center;
 }
-.login_form__header .site-logo {
+.signup_form__header .site-logo {
   display: block;
   width: 250px;
   height: 120px;
@@ -15,35 +15,35 @@
   background-position: center;
 }
 
-.login_form {
+.signup_form {
   box-shadow: 0 3px 5px 0 rgba(173, 173, 173, 0.5);
   background: #fff;
   padding: 35px 44px 40px;
   width: 100%;
 }
-.login_form__social {
+.signup_form__social {
   padding: 15px 0;
 }
-.login_form__social button {
+.signup_form__social button {
   border-radius: 4px;
   padding: 4px 20px;
   font-weight: 700;
   color: #2d3748;
 }
-.login_form__social .sign_in_text {
+.signup_form__social .sign_in_text {
   color: #464646;
   font-size: 27px;
   padding-bottom: 18px;
   text-align: center;
 }
-.login_form__social .line {
+.signup_form__social .line {
   height: 2px;
   background: #ededed;
   width: 100%;
   margin: 30px 0;
   text-align: center;
 }
-.login_form__social .line .or {
+.signup_form__social .line .or {
   display: inline-block;
   background: #fff;
   font-size: 15px;
@@ -52,28 +52,21 @@
   padding: 0 10px;
   vertical-align: middle;
 }
-.login_form_submit {
+.signup_form_submit {
   height: 45px;
   font-weight: 700;
   background-color: #000;
   text-transform: uppercase;
 }
-.login_form .ant-form-item-label > label.ant-form-item-required:before {
+.signup_form .ant-form-item-label > label.ant-form-item-required:before {
   content: unset;
 }
-.login_form .ant-form-item-label {
+.signup_form .ant-form-item-label {
   font-weight: 700;
   text-transform: uppercase;
 }
-.login_form .ant-form-item-label label {
+.signup_form .ant-form-item-label label {
   color: #4a5568 !important;
-}
-
-.login_form__footer {
-  margin-top: 20px;
-  text-align: center;
-  font-size: 19px;
-  font-weight: 700;
 }
 
 /*# sourceMappingURL=indes.css.map */
