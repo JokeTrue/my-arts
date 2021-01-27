@@ -2,6 +2,9 @@ package mysql
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
+
 	"github.com/JokeTrue/my-arts/internal/models"
 	"github.com/JokeTrue/my-arts/internal/users"
 	"github.com/jmoiron/sqlx"
@@ -103,4 +106,37 @@ func (r *UsersRepository) GetUserByEmail(email string) (*models.User, error) {
 		return nil, users.ErrUserQuery
 	}
 	return &user, nil
+}
+
+func (r *UsersRepository) SearchUsers(query string) ([]*models.User, error) {
+	list := []*models.User{}
+
+	var filterExpression string
+	if query != "" {
+		filters := map[string]string{
+			"first_name": query,
+			"last_name":  query,
+		}
+		expressions := make([]string, 0, len(filters))
+		for field, filter := range filters {
+			expression := fmt.Sprintf("LOWER(%s) LIKE '%%%s%%'", field, filter)
+			expressions = append(expressions, expression)
+		}
+
+		filterExpression = " WHERE " + strings.Join(expressions, " OR ")
+	}
+
+	searchQuery := fmt.Sprintf(QuerySearchUsers, filterExpression)
+	if err := r.db.Select(&list, searchQuery); err != nil {
+		return nil, users.ErrUserQuery
+	}
+	return list, nil
+}
+
+func (r *UsersRepository) GetUserFriends(id int) ([]*models.User, error) {
+	list := []*models.User{}
+	if err := r.db.Select(&list, QueryGetUserFriends, id, id); err != nil {
+		return nil, users.ErrUserQuery
+	}
+	return list, nil
 }

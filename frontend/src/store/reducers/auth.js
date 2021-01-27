@@ -10,7 +10,7 @@ import {
 
 const initialState = {
   user: undefined,
-  isLoggedIn: false,
+  isLoggedIn: undefined,
 };
 
 export default function (state = initialState, action) {

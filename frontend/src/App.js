@@ -1,26 +1,24 @@
 import React from "react";
 
 import { connect } from "react-redux";
-import { Router } from "react-router-dom";
-
-import Routes from "./routes";
+import { Route, Router, Switch } from "react-router-dom";
 import { history } from "./helpers/history";
 import { fetchCurrentUser } from "./store/actions/auth";
+
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import ProfilePage from "./pages/ProfilePage";
+import UsersPage from "./pages/UsersPage";
+import FriendsPage from "./pages/FriendsPage";
 
 import { Layout } from "antd";
 import Sidebar from "./components/Sidebar";
 
-import "antd/dist/antd.css";
-import "./index.css";
-
-const { Content, Footer, Header } = Layout;
+const { Content, Footer } = Layout;
 
 @connect((store) => ({ authStore: store.Auth }))
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
     const { isLoggedIn } = this.props.authStore;
     const token = localStorage.getItem("token");
@@ -36,11 +34,15 @@ class App extends React.Component {
         <Layout style={{ minHeight: "100vh" }}>
           {this.props.authStore.user && <Sidebar logOut={this.logOut} />}
           <Layout className="app_layout">
-            {this.props.authStore.user && (
-              <Header style={{ background: "#fff", padding: 0 }} />
-            )}
-            <Content style={{ margin: "0 16px" }}>
-              <Routes />
+            <Content style={{ margin: "0 16px", paddingTop: "20px" }}>
+              <Switch>
+                <Route exact path={["/", "/home"]} component={HomePage} />
+                <Route exact path="/login" component={LoginPage} />
+                <Route exact path="/sign_up" component={SignUpPage} />
+                <Route exact path="/users/:id" component={ProfilePage} />
+                <Route exact path="/users" component={UsersPage} />
+                <Route exact path="/friends" component={FriendsPage} />
+              </Switch>
             </Content>
             <Footer style={{ textAlign: "center" }}>
               MyArts ©2021 Created by Pavel Petrov

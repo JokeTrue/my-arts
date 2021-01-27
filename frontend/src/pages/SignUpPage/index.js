@@ -8,6 +8,7 @@ import { signUp } from "../../store/actions/auth";
 import {
   Button,
   Col,
+  Divider,
   Form,
   Input,
   InputNumber,
@@ -20,14 +21,17 @@ import "./indes.css";
 
 const { TextArea } = Input;
 
-@connect((store) => ({ authStore: store.Auth }))
+@connect((store) => ({
+  user: store.Auth.user,
+  isLoggedIn: store.Auth.isLoggedIn,
+}))
 class SignUpPage extends React.Component {
   onFinish = (values) => {
     this.props.dispatch(signUp(values));
   };
 
   render() {
-    if (this.props.authStore.isLoggedIn) {
+    if (this.props.isLoggedIn) {
       return <Redirect to="/home" />;
     }
 
@@ -55,9 +59,7 @@ class SignUpPage extends React.Component {
                 <Button icon={<GithubOutlined />}>GITHUB</Button>
                 <Button icon={<GoogleOutlined />}>GOOGLE</Button>
               </Space>
-              <div className="line">
-                <div className="or">or</div>
-              </div>
+              <Divider>or</Divider>
             </div>
             <Form name="basic" layout="vertical" onFinish={this.onFinish}>
               <Form.Item

@@ -13,6 +13,9 @@ import * as serviceWorker from "./serviceWorker";
 import rootReducer from "./store/rootReducer";
 import rootSaga from "./store/rootSaga";
 
+import "antd/dist/antd.css";
+import "./index.css";
+
 const sagaMiddleware = createSagaMiddleware();
 const store = createStore(
   rootReducer,

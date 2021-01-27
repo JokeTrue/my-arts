@@ -28,10 +28,3 @@ CREATE TABLE friendships
     CONSTRAINT PK_Friends_UserID1_UserID2 PRIMARY KEY (user_1, user_2),
     CONSTRAINT UQ_Friends_UserID2_UserID1 UNIQUE (user_2, user_1)
 );
-
-# How to get Friends
-# SELECT user_1, user_2
-# FROM friendships
-# UNION ALL
-# SELECT user_2, user_1
-# FROM friendships

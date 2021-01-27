@@ -38,27 +38,9 @@
       padding-bottom: 18px;
       text-align: center;
     }
-
-    .line {
-      height: 2px;
-      background: #ededed;
-      width: 100%;
-      margin: 30px 0;
-      text-align: center;
-
-      .or {
-        display: inline-block;
-        background: #fff;
-        font-size: 15px;
-        margin-top: -1.5em;
-        color: #999;
-        padding: 0 10px;
-        vertical-align: middle;
-      }
-    }
   }
 
-  &_submit {
+  &__submit {
     height: 45px;
     font-weight: 700;
     background-color: #000;

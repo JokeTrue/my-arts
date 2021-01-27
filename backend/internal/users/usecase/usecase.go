@@ -36,3 +36,11 @@ func (u *UsersUseCase) Update(user models.User) (*models.User, error) {
 func (u *UsersUseCase) GetUserByEmail(email string) (*models.User, error) {
 	return u.repo.GetUserByEmail(email)
 }
+
+func (u *UsersUseCase) SearchUsers(query string) ([]*models.User, error) {
+	return u.repo.SearchUsers(query)
+}
+
+func (u *UsersUseCase) GetUserFriends(id int) ([]*models.User, error) {
+	return u.repo.GetUserFriends(id)
+}

@@ -26,6 +26,7 @@
     "axios": "^0.21.1",
     "customize-cra": "^1.0.0",
     "http-proxy-middleware": "^1.0.6",
+    "lodash": "^4.17.20",
     "qs": "^6.9.6",
     "react": "^17.0.1",
     "react-app-rewired": "^2.1.8",

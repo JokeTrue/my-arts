@@ -5,12 +5,14 @@ import { Link, Redirect } from "react-router-dom";
 
 import { fetchToken } from "../../store/actions/auth";
 
-import { Button, Col, Form, Input, Row, Space } from "antd";
+import { Button, Col, Divider, Form, Input, Row, Space } from "antd";
 import { GithubOutlined, GoogleOutlined } from "@ant-design/icons";
-
 import "./indes.css";
 
-@connect((store) => ({ authStore: store.Auth }))
+@connect((store) => ({
+  user: store.Auth.user,
+  isLoggedIn: store.Auth.isLoggedIn,
+}))
 class LoginPage extends React.Component {
   onFinish = (values) => {
     const { username, password } = values;
@@ -18,7 +20,7 @@ class LoginPage extends React.Component {
   };
 
   render() {
-    if (this.props.authStore.isLoggedIn) {
+    if (this.props.isLoggedIn) {
       return <Redirect to="/home" />;
     }
 
@@ -46,10 +48,9 @@ class LoginPage extends React.Component {
                 <Button icon={<GithubOutlined />}>GITHUB</Button>
                 <Button icon={<GoogleOutlined />}>GOOGLE</Button>
               </Space>
-              <div className="line">
-                <div className="or">or</div>
-              </div>
+              <Divider>or</Divider>
             </div>
+
             <Form name="basic" layout="vertical" onFinish={this.onFinish}>
               <Form.Item
                 label="Username"
@@ -82,7 +83,7 @@ class LoginPage extends React.Component {
                   block
                   type="primary"
                   htmlType="submit"
-                  className="login_form_submit"
+                  className="login_form__submit"
                 >
                   Submit
                 </Button>

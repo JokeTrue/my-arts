@@ -65,10 +65,12 @@ func authenticator(useCase users.UseCase) func(c *gin.Context) (interface{}, err
 
 func GetJWTMiddleware(useCase users.UseCase) (*jwt.GinJWTMiddleware, error) {
 	secretKey := os.Getenv("SECRET_KEY")
+	week, _ := time.ParseDuration("168h")
 	middleware := &jwt.GinJWTMiddleware{
 		PayloadFunc:     payloadFunc,
 		IdentityHandler: identityHandler,
 		Authenticator:   authenticator(useCase),
+		Timeout:         week,
 		MaxRefresh:      time.Hour,
 		IdentityKey:     IdentityKey,
 		Key:             []byte(secretKey),

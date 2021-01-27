@@ -1,31 +1,30 @@
 import React from "react";
 
+import { Link } from "react-router-dom";
 import { connect } from "react-redux";
-import { Layout, Menu } from "antd";
 
 import { logout } from "../../store/actions/auth";
 
+import { Layout, Menu } from "antd";
 import {
-  DesktopOutlined,
-  FileOutlined,
+  HomeOutlined,
   LogoutOutlined,
-  PieChartFilled,
-  TeamOutlined,
+  RadarChartOutlined,
+  SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
 import "./index.css";
 
 const { Sider } = Layout;
-const { SubMenu } = Menu;
 
 @connect((store) => ({ authStore: store.Auth }))
 class Sidebar extends React.Component {
-  state = {
-    collapsed: false,
-  };
-
   constructor(props) {
     super(props);
+
+    this.state = {
+      collapsed: false,
+    };
   }
 
   onCollapse = (collapsed) => {
@@ -33,6 +32,7 @@ class Sidebar extends React.Component {
   };
 
   render() {
+    const { id } = this.props.authStore.user;
     return (
       <Sider
         collapsible
@@ -40,52 +40,41 @@ class Sidebar extends React.Component {
         onCollapse={this.onCollapse}
       >
         <div className="logo" />
-        <Menu theme="dark" defaultSelectedKeys={["1"]} mode="inline">
-          <Menu.Item key="1">
-            <PieChartFilled />
-            <span>Option 1</span>
-          </Menu.Item>
-          <Menu.Item key="2">
-            <DesktopOutlined />
-            <span>Option 2</span>
-          </Menu.Item>
-          <SubMenu
-            key="sub1"
-            title={
-              <span>
+        {id && (
+          <Menu theme="dark" mode="inline">
+            <Menu.Item key="home">
+              <Link to="/home">
+                <HomeOutlined />
+                <span>Home</span>
+              </Link>
+            </Menu.Item>
+            <Menu.Item key="users">
+              <Link to="/users">
+                <SearchOutlined />
+                <span>Users</span>
+              </Link>
+            </Menu.Item>
+            <Menu.Item key="profile">
+              <Link to={`/users/${id}`}>
                 <UserOutlined />
-                <span>User</span>
-              </span>
-            }
-          >
-            <Menu.Item key="3">Tom</Menu.Item>
-            <Menu.Item key="4">Bill</Menu.Item>
-            <Menu.Item key="5">Alex</Menu.Item>
-          </SubMenu>
-          <SubMenu
-            key="sub2"
-            title={
-              <span>
-                <TeamOutlined />
-                <span>Team</span>
-              </span>
-            }
-          >
-            <Menu.Item key="6">Team 1</Menu.Item>
-            <Menu.Item key="8">Team 2</Menu.Item>
-          </SubMenu>
-          <Menu.Item key="9">
-            <FileOutlined />
-            <span>File</span>
-          </Menu.Item>
-          <Menu.Item
-            key="logout"
-            onClick={(e) => this.props.dispatch(logout())}
-          >
-            <LogoutOutlined />
-            <span>Log out</span>
-          </Menu.Item>
-        </Menu>
+                <span>Profile</span>
+              </Link>
+            </Menu.Item>
+            <Menu.Item key="friends">
+              <Link to="/friends">
+                <RadarChartOutlined />
+                <span>Friends</span>
+              </Link>
+            </Menu.Item>
+            <Menu.Item
+              key="logout"
+              onClick={(e) => this.props.dispatch(logout())}
+            >
+              <LogoutOutlined />
+              <span>Log out</span>
+            </Menu.Item>
+          </Menu>
+        )}
       </Sider>
     );
   }
