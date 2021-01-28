@@ -9,3 +9,4 @@ k8s
 Dockerfile
 .DS_Store
 vendor
+node_modules/

@@ -9,8 +9,8 @@ import {
 } from "../actions/auth";
 
 const initialState = {
-  user: undefined,
-  isLoggedIn: undefined,
+  user: null,
+  isLoggedIn: null,
 };
 
 export default function (state = initialState, action) {

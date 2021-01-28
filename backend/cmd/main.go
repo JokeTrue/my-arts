@@ -1,10 +1,10 @@
 package main
 
 import (
-	"flag"
 	"time"
 
 	"github.com/JokeTrue/my-arts/pkg/middleware"
+	"github.com/caarlos0/env/v6"
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/JokeTrue/my-arts/pkg/app"
@@ -22,29 +22,18 @@ import (
 
 var appName = "my-arts-backend"
 
-var (
-	addr            string
-	databaseDSN     string
-	debug           bool
-	shutdownTimeout time.Duration
-)
-
-func init() {
-	flag.BoolVar(&debug, "debug", false, "Debug Mode")
-	flag.StringVar(&addr, "addr", ":9080", "App addr")
-	flag.StringVar(&databaseDSN, "db-dsn", "", "Database DSN")
-	flag.DurationVar(&shutdownTimeout, "shutdown-timeout", 30*time.Second, "Graceful shutdown timeout")
-}
-
 func main() {
-	flag.Parse()
-
 	// 1. Setup Application
+	var settings app.Settings
+	if err := env.Parse(&settings); err != nil {
+		logging.WithError(err).Fatal("failed to parse config")
+	}
+
 	logger := logging.DefaultLogger
-	application := app.NewApplication(debug, logger, databaseDSN)
+	application := app.NewApplication(logger, settings)
 
 	// 2. Setup HTTP Server
-	srv := service.NewHTTPServer(addr, shutdownTimeout, alice.New(
+	srv := service.NewHTTPServer(":"+settings.Port, time.Duration(settings.ShutdownTimeout)*time.Second, alice.New(
 		gziphandler.GzipHandler,
 		middleware.Logger(logger),
 	).Then(application.Run()))

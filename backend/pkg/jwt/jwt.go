@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"database/sql"
-	"os"
 	"time"
 
 	"github.com/JokeTrue/my-arts/internal/models"
@@ -63,8 +62,7 @@ func authenticator(useCase users.UseCase) func(c *gin.Context) (interface{}, err
 	}
 }
 
-func GetJWTMiddleware(useCase users.UseCase) (*jwt.GinJWTMiddleware, error) {
-	secretKey := os.Getenv("SECRET_KEY")
+func GetJWTMiddleware(useCase users.UseCase, secretKey string) (*jwt.GinJWTMiddleware, error) {
 	week, _ := time.ParseDuration("168h")
 	middleware := &jwt.GinJWTMiddleware{
 		PayloadFunc:     payloadFunc,

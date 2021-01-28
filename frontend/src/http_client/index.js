@@ -21,20 +21,20 @@ httpClient.interceptors.request.use(
   }
 );
 
-// httpClient.interceptors.response.use((response) => {
-//   return response
-// }, async function(error) {
-//   const originalRequest = error.config;
-//   if ((error.response.status === 403 || error.response.status === 401) && !originalRequest._retry) {
-//     originalRequest._retry = true;
-//
-//     const data = await callPost("/auth/refresh_token")
-//     axios.defaults.headers.common['Authorization'] = 'Bearer ' + data.token;
-//
-//     return httpClient(originalRequest);
-//   }
-//   return Promise.reject(error);
-// });
+httpClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async function (error) {
+    const originalRequest = error.config;
+    if (error.response.status === 403 || error.response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.reload();
+      return httpClient(originalRequest);
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default httpClient;
 

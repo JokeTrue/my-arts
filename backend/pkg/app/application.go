@@ -31,41 +31,66 @@ import (
 	tagsRepo "github.com/JokeTrue/my-arts/internal/tags/repository/mysql"
 	tagsUseCase "github.com/JokeTrue/my-arts/internal/tags/usecase"
 
+	"github.com/JokeTrue/my-arts/internal/friendship"
+	friendshipDelivery "github.com/JokeTrue/my-arts/internal/friendship/delivery/http"
+	friendshipRepo "github.com/JokeTrue/my-arts/internal/friendship/repository/mysql"
+	friendshipUseCase "github.com/JokeTrue/my-arts/internal/friendship/usecase"
+
 	"github.com/JokeTrue/my-arts/pkg/jwt"
+	"github.com/JokeTrue/my-arts/pkg/logging"
+	_ "github.com/JokeTrue/my-arts/pkg/tzinit" // Set TZ to UTC
 	"github.com/gin-gonic/gin"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
-
-	"github.com/JokeTrue/my-arts/pkg/logging"
-	_ "github.com/JokeTrue/my-arts/pkg/tzinit" // Set TZ to UTC
 )
 
+type Settings struct {
+	Debug           bool   `env:"DEBUG" envDefault:"false"`
+	Port            string `env:"PORT" envDefault:"8080"`
+	DatabaseDSN     string `env:"DATABASE_DSN"`
+	ShutdownTimeout int    `env:"SHUTDOWN_TIMEOUT" envDefault:"30"`
+	SecretKey       string `env:"SECRET_KEY"`
+	MigrationsPath  string `env:"MIGRATIONS_PATH"`
+}
+
 type Application struct {
-	debug  bool
-	db     *sqlx.DB
-	router *gin.Engine
-	logger logging.Logger
+	settings Settings
+	db       *sqlx.DB
+	router   *gin.Engine
+	logger   logging.Logger
 
 	usersUseCase      users.UseCase
 	productsUseCase   products.UseCase
 	reviewsUseCase    reviews.UseCase
 	categoriesUseCase categories.UseCase
 	tagsUseCase       tags.UseCase
+	friendshipUseCase friendship.UseCase
 }
 
-func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Application {
+func NewApplication(logger logging.Logger, settings Settings) *Application {
 	router := gin.Default()
 	router.Use(gin.Recovery())
 
+	if gin.Mode() == "release" {
+		router.Static("/static/", "./frontend/static")
+		router.LoadHTMLGlob("./frontend/*.html")
+		router.GET("/", func(c *gin.Context) {
+			c.HTML(http.StatusOK, "index.html", nil)
+		})
+		router.NoRoute(func(c *gin.Context) {
+			c.HTML(http.StatusOK, "index.html", nil)
+		})
+	}
+
 	application := &Application{
-		debug:  debug,
-		logger: logger,
-		router: router,
+		settings: settings,
+		logger:   logger,
+		router:   router,
 	}
 
 	// 1. Setup Database
-	application.setupDB(dbDSN)
+	application.setupDB()
 	//application.setupMockData("db/mock_data/")
 
 	// 2. Setup UseCases + Endpoints
@@ -80,6 +105,7 @@ func NewApplication(debug bool, logger logging.Logger, dbDSN string) *Applicatio
 	reviewsDelivery.RegisterHTTPEndpoints(apiGroup, application.reviewsUseCase)
 	categoriesDelivery.RegisterHTTPEndpoints(apiGroup, application.categoriesUseCase)
 	tagsDelivery.RegisterHTTPEndpoints(apiGroup, application.tagsUseCase)
+	friendshipDelivery.RegisterHTTPEndpoints(apiGroup, application.friendshipUseCase)
 
 	return application
 }
@@ -114,12 +140,17 @@ func (a *Application) setupUseCases() {
 	categoriesRepository := categoriesRepo.NewCategoriesRepository(a.db)
 	a.categoriesUseCase = categoriesUseCase.NewCategoriesUseCase(categoriesRepository)
 
+	// Tags
 	tagsRepository := tagsRepo.NewTagsRepository(a.db)
 	a.tagsUseCase = tagsUseCase.NewTagsUseCase(tagsRepository)
+
+	// Friendship
+	friendshipRepository := friendshipRepo.NewFriendshipRepository(a.db)
+	a.friendshipUseCase = friendshipUseCase.NewFriendshipUseCase(friendshipRepository)
 }
 
 func (a *Application) setupJWT() *gin.RouterGroup {
-	authMiddleware, err := jwt.GetJWTMiddleware(a.usersUseCase)
+	authMiddleware, err := jwt.GetJWTMiddleware(a.usersUseCase, a.settings.SecretKey)
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup jwt")
 	}
@@ -132,13 +163,13 @@ func (a *Application) setupJWT() *gin.RouterGroup {
 	return apiGroup
 }
 
-func (a *Application) setupDB(databaseDSN string) {
-	db, err := sqlx.Connect("mysql", databaseDSN+"?parseTime=true")
+func (a *Application) setupDB() {
+	db, err := sqlx.Connect("mysql", a.settings.DatabaseDSN+"?parseTime=true")
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup db connection")
 	}
 
-	m, err := migrate.New("file://db/migrations", "mysql://"+databaseDSN)
+	m, err := migrate.New("file://"+a.settings.MigrationsPath, "mysql://"+a.settings.DatabaseDSN)
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup migrations")
 	}
@@ -151,7 +182,7 @@ func (a *Application) setupDB(databaseDSN string) {
 }
 
 func (a *Application) setupMockData(mockPath string) {
-	if !a.debug {
+	if !a.settings.Debug {
 		return
 	}
 

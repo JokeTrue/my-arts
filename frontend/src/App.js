@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 
-import { connect } from "react-redux";
-import { Route, Router, Switch } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Redirect, Route, Router, Switch } from "react-router-dom";
 import { history } from "./helpers/history";
 import { fetchCurrentUser } from "./store/actions/auth";
 
@@ -14,44 +14,63 @@ import FriendsPage from "./pages/FriendsPage";
 
 import { Layout } from "antd";
 import Sidebar from "./components/Sidebar";
+import FriendshipRequestsPage from "./pages/FriendshipRequestsPage";
+import { PrivateRoute } from "./components/PrivateRoute";
+import { CurrentUserContext } from "./helpers/currentUserContext";
 
 const { Content, Footer } = Layout;
 
-@connect((store) => ({ authStore: store.Auth }))
-class App extends React.Component {
-  componentDidMount() {
-    const { isLoggedIn } = this.props.authStore;
+export default function App() {
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.Auth);
+
+  useEffect(() => {
     const token = localStorage.getItem("token");
-
-    if (token && !isLoggedIn) {
-      this.props.dispatch(fetchCurrentUser());
+    if (token !== null && token !== "" && user === null) {
+      dispatch(fetchCurrentUser());
     }
-  }
+  });
 
-  render() {
-    return (
-      <Router history={history}>
-        <Layout style={{ minHeight: "100vh" }}>
-          {this.props.authStore.user && <Sidebar logOut={this.logOut} />}
-          <Layout className="app_layout">
-            <Content style={{ margin: "0 16px", paddingTop: "20px" }}>
-              <Switch>
-                <Route exact path={["/", "/home"]} component={HomePage} />
-                <Route exact path="/login" component={LoginPage} />
-                <Route exact path="/sign_up" component={SignUpPage} />
-                <Route exact path="/users/:id" component={ProfilePage} />
-                <Route exact path="/users" component={UsersPage} />
-                <Route exact path="/friends" component={FriendsPage} />
-              </Switch>
-            </Content>
-            <Footer style={{ textAlign: "center" }}>
-              MyArts ©2021 Created by Pavel Petrov
-            </Footer>
-          </Layout>
-        </Layout>
-      </Router>
-    );
-  }
+  return (
+    <CurrentUserContext.Consumer>
+      {(ctx) => (
+        <CurrentUserContext.Provider value={{ user }}>
+          <Router history={history}>
+            <Layout style={{ minHeight: "100vh" }}>
+              <Sidebar />
+              <Layout className="app_layout">
+                <Content style={{ margin: "0 16px", paddingTop: "20px" }}>
+                  <Switch>
+                    <Route exact path="/login" component={LoginPage} />
+                    <Route exact path="/sign_up" component={SignUpPage} />
+                    <PrivateRoute exact path="/home" component={HomePage} />
+                    <PrivateRoute
+                      exact
+                      path="/users/:id"
+                      component={ProfilePage}
+                    />
+                    <PrivateRoute exact path="/users" component={UsersPage} />
+                    <PrivateRoute
+                      exact
+                      path="/friends"
+                      component={FriendsPage}
+                    />
+                    <PrivateRoute
+                      exact
+                      path="/friendship_requests"
+                      component={FriendshipRequestsPage}
+                    />
+                    <Redirect to="/login" />
+                  </Switch>
+                </Content>
+                <Footer style={{ textAlign: "center" }}>
+                  MyArts ©2021 Created by Pavel Petrov
+                </Footer>
+              </Layout>
+            </Layout>
+          </Router>
+        </CurrentUserContext.Provider>
+      )}
+    </CurrentUserContext.Consumer>
+  );
 }
-
-export default App;

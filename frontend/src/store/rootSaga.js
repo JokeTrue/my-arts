@@ -9,6 +9,11 @@ import {
 import { watchFetchUsers } from "./sagas/users";
 import { watchFetchProfile } from "./sagas/profile";
 import { watchFetchFriends } from "./sagas/friends";
+import {
+  watchActionFriendshipRequests,
+  watchCreateFriendshipRequests,
+  watchFetchFriendshipRequests,
+} from "./sagas/friendshipRequests";
 
 export default function* rootSaga() {
   yield all([
@@ -18,6 +23,10 @@ export default function* rootSaga() {
 
     fork(watchFetchUsers),
     fork(watchFetchProfile),
+
     fork(watchFetchFriends),
+    fork(watchFetchFriendshipRequests),
+    fork(watchCreateFriendshipRequests),
+    fork(watchActionFriendshipRequests),
   ]);
 }

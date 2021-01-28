@@ -57,7 +57,6 @@ function* fetchCurrentUserSaga(action) {
 }
 
 function* signUpSaga(action) {
-  debugger;
   const { payload } = action;
   const { email, password1 } = payload;
 
