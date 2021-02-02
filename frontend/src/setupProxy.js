@@ -1,9 +1,9 @@
 const {createProxyMiddleware} = require("http-proxy-middleware");
 
 module.exports = function (app) {
-    let target = "http://localhost:8080";
+    let target = "https://my-arts.herokuapp.com";
     if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-        target = "https://my-arts.herokuapp.com";
+        target = "http://localhost:8080";
     }
     app.use(
         "/api",

@@ -24,7 +24,7 @@ const FriendshipRequestsList = (props) => {
                 cover={
                   <img
                     alt="avatar"
-                    src="https://sun9-36.userapi.com/sun9-55/impf/c857520/v857520744/85ad6/CLDVzPGJEkQ.jpg?size=640x640&quality=96&proxy=1&sign=73231812f06bad04f453584f93a57c29&type=album"
+                    src="https://picsum.photos/200"
                   />
                 }
                 actions={[

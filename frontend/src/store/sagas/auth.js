@@ -1,5 +1,4 @@
 import { put, takeEvery } from "redux-saga/effects";
-
 import { callGet, callPost } from "../../http_client";
 import openNotification from "../../helpers/openNotification";
 
@@ -11,7 +10,6 @@ import {
   FETCH_TOKEN_FAIL,
   FETCH_TOKEN_SUCCESS,
   fetchCurrentUser,
-  fetchToken,
   SIGN_UP,
   SIGN_UP_FAIL,
   SIGN_UP_SUCCESS,
@@ -58,8 +56,6 @@ function* fetchCurrentUserSaga(action) {
 
 function* signUpSaga(action) {
   const { payload } = action;
-  const { email, password1 } = payload;
-
   try {
     const res = yield callPost("/sign_up", payload);
     if (res.data.error) {
@@ -68,7 +64,8 @@ function* signUpSaga(action) {
       return;
     }
     yield put({ type: SIGN_UP_SUCCESS });
-    yield put(fetchToken(email, password1));
+    openNotification("success", "You successfully signed up!");
+    setTimeout(() => (window.location.replace("/login")), 2000);
   } catch (e) {
     openNotification("error", "Authentication Error", e.toString());
     yield put({ type: SIGN_UP_FAIL });

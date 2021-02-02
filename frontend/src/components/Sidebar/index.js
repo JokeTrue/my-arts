@@ -23,7 +23,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const { user } = useSelector((state) => state.Auth);
 
-  if (user === null) {
+  if (!user) {
     return <div />;
   }
 

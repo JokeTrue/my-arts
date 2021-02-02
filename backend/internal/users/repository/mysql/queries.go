@@ -28,5 +28,5 @@ const (
 	
 	SELECT u.*
 	FROM friendship f
-	LEFT JOIN users AS U ON f.user_2 = u.id`
+	LEFT JOIN users AS u ON f.user_2 = u.id`
 )
