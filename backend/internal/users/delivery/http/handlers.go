@@ -1,13 +1,15 @@
 package http
 
 import (
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/JokeTrue/my-arts/internal/models"
 	"github.com/JokeTrue/my-arts/internal/users"
 	appErrors "github.com/JokeTrue/my-arts/pkg/errors"
 	"github.com/JokeTrue/my-arts/pkg/jwt"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"time"
 )
 
 type Handler struct {
@@ -75,4 +77,49 @@ func (h *Handler) GetCurrentUser(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, user)
+}
+
+func (h *Handler) GetUser(c *gin.Context) {
+	rawUserId := c.Param("user_id")
+	userId, err := strconv.Atoi(rawUserId)
+	if err != nil {
+		appErrors.JSONError(c, err, rawUserId)
+		return
+	}
+
+	user, err := h.useCase.GetUserByID(userId)
+	if err != nil {
+		appErrors.JSONError(c, err, user)
+		return
+	}
+
+	c.JSON(http.StatusOK, user)
+}
+
+func (h *Handler) SearchUsers(c *gin.Context) {
+	query := c.Query("query")
+
+	usersList, err := h.useCase.SearchUsers(query)
+	if err != nil {
+		appErrors.JSONError(c, err, query)
+		return
+	}
+
+	c.JSON(http.StatusOK, usersList)
+}
+
+func (h *Handler) GetUserFriends(c *gin.Context) {
+	userId, err := jwt.GetCurrentUserID(c)
+	if err != nil {
+		appErrors.JSONError(c, err, nil)
+		return
+	}
+
+	usersList, err := h.useCase.GetUserFriends(userId)
+	if err != nil {
+		appErrors.JSONError(c, err, userId)
+		return
+	}
+
+	c.JSON(http.StatusOK, usersList)
 }

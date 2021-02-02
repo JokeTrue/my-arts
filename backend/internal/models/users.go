@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type User struct {
 	ID       int    `json:"id" db:"id"`
@@ -14,6 +17,6 @@ type User struct {
 	Location  string `json:"location" db:"location"`
 	Biography string `json:"biography" db:"biography"`
 
-	Permissions string    `json:"-" db:"permissions"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
+	Permissions sql.NullString `json:"-" db:"permissions"`
+	CreatedAt   time.Time      `json:"created_at" db:"created_at"`
 }

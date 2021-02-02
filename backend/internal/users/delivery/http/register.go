@@ -11,6 +11,9 @@ func RegisterHTTPEndpoints(authRouter *gin.RouterGroup, router *gin.Engine, useC
 	group := authRouter.Group("/users")
 	{
 		group.GET("/me", handler.GetCurrentUser)
+		group.GET("/search", handler.SearchUsers)
+		group.GET("/user/:user_id", handler.GetUser)
+		group.GET("/user/:user_id/friends", handler.GetUserFriends)
 	}
 
 	router.POST("/api/sign_up", handler.CreateUser)

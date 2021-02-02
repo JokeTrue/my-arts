@@ -11,4 +11,6 @@ type Repository interface {
 	GetUserByID(id int) (*models.User, error)
 	GetUserByEmail(email string) (*models.User, error)
 	Update(user models.User) (*models.User, error)
+	SearchUsers(query string) ([]*models.User, error)
+	GetUserFriends(id int) ([]*models.User, error)
 }
