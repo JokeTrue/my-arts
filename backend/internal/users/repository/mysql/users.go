@@ -111,22 +111,10 @@ func (r *UsersRepository) GetUserByEmail(email string) (*models.User, error) {
 func (r *UsersRepository) SearchUsers(query string, offset, limit int) ([]*models.User, error) {
 	list := []*models.User{}
 
-	var filterExpression string
-	if query != "" {
-		filters := map[string]string{
-			"first_name": query,
-			"last_name":  query,
-		}
-		expressions := make([]string, 0, len(filters))
-		for field, filter := range filters {
-			expression := fmt.Sprintf("LOWER(%s) LIKE '%%%s%%'", field, filter)
-			expressions = append(expressions, expression)
-		}
-
-		filterExpression = " WHERE " + strings.Join(expressions, " OR ")
-	}
-
+	searchFilters := GetSearchFilters(query)
+	filterExpression := " WHERE " + strings.Join(searchFilters, " AND ")
 	searchQuery := fmt.Sprintf(QuerySearchUsers, filterExpression)
+
 	if err := r.db.Select(&list, searchQuery, limit, offset); err != nil {
 		return nil, users.ErrUserQuery
 	}
@@ -139,4 +127,12 @@ func (r *UsersRepository) GetUserFriends(id int, offset, limit int) ([]*models.U
 		return nil, users.ErrUserQuery
 	}
 	return list, nil
+}
+
+func (r *UsersRepository) GetTotalCount() (int, error) {
+	var count int
+	if err := r.db.QueryRow(QueryGetTotalCount).Scan(&count); err != nil {
+		return 0, users.ErrUserQuery
+	}
+	return count, nil
 }

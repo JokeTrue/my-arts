@@ -9,6 +9,7 @@ import {
 import { watchFetchUsers } from "./sagas/users";
 import { watchFetchProfile } from "./sagas/profile";
 import { watchFetchFriends } from "./sagas/friends";
+import { watchFetchUsersCount } from "./sagas/home";
 import {
   watchActionFriendshipRequests,
   watchCreateFriendshipRequests,
@@ -19,6 +20,7 @@ export default function* rootSaga() {
   yield all([
     fork(watchSignUp),
     fork(watchFetchToken),
+    fork(watchFetchUsersCount),
     fork(watchFetchCurrentUser),
 
     fork(watchFetchUsers),

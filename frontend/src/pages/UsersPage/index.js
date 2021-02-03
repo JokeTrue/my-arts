@@ -35,11 +35,10 @@ export default function UsersPage(props) {
     limit,
     hasMore,
   } = useSelector((state) => state.Users);
-  const {
-    users: friends,
-    isLoading: isFriendsLoading,
-  } = useSelector((state) => state.Friends);
-  const loadMore = () => dispatch(fetchUsers(user.id, offset, limit));
+  const { users: friends, isLoading: isFriendsLoading } = useSelector(
+    (state) => state.Friends
+  );
+  const loadMore = () => dispatch(fetchUsers(query, offset, limit));
 
   useEffect(() => {
     if (user) {
@@ -48,7 +47,7 @@ export default function UsersPage(props) {
   }, [dispatch, user]);
 
   useEffect(() => {
-    dispatch(fetchUsers(query, offset, limit));
+    dispatch(fetchUsers(query, 0, limit));
   }, [dispatch, query]);
 
   const isLoading = isUsersLoading || isFriendsLoading;
@@ -62,11 +61,11 @@ export default function UsersPage(props) {
 
       <Layout style={{ height: "100%" }}>
         <Search
-          placeholder="Type First or Last Name"
+          placeholder="Search by last and first name. Example: Terry Lavina or ter lav"
           enterButton="Search"
           size="large"
           loading={isLoading}
-          style={{ padding: "0 24px", marginTop: "30px" }}
+          style={{ padding: "0 24px" }}
           suffix={
             <AudioOutlined
               style={{

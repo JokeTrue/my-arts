@@ -13,6 +13,7 @@ const HistoryBreadcrumbs = (props) => {
       className="site-page-header"
       title={title}
       subTitle={subTitle}
+      style={{marginBottom: "30px"}}
       breadcrumb={{
         routes: routes,
         itemRender: historyBreadcrumbsRender,

@@ -30,4 +30,6 @@ const (
 	FROM friendship f
 	LEFT JOIN users AS u ON f.user_2 = u.id
 	LIMIT ? OFFSET ?`
+
+	QueryGetTotalCount = `SELECT COUNT(*) FROM users`
 )

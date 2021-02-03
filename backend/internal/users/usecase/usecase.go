@@ -44,3 +44,7 @@ func (u *UsersUseCase) SearchUsers(query string, offset, limit int) ([]*models.U
 func (u *UsersUseCase) GetUserFriends(id int, offset, limit int) ([]*models.User, error) {
 	return u.repo.GetUserFriends(id, offset, limit)
 }
+
+func (u *UsersUseCase) GetTotalCount() (int, error) {
+	return u.repo.GetTotalCount()
+}

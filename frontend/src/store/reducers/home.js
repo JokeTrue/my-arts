@@ -1,41 +1,35 @@
 import {
-  FETCH_FRIENDS,
-  FETCH_FRIENDS_FAIL,
-  FETCH_FRIENDS_SUCCESS,
-} from "../actions/friends";
+  FETCH_USERS_COUNT,
+  FETCH_USERS_COUNT_FAIL,
+  FETCH_USERS_COUNT_SUCCESS,
+} from "../actions/home";
 
 const initialState = {
-  users: [],
+  usersCount: null,
   isLoading: false,
-  offset: 0,
-  limit: 40,
-  hasMore: true,
 };
 
 export default function (state = initialState, action) {
   const { type, payload } = action;
 
   switch (type) {
-    case FETCH_FRIENDS:
+    case FETCH_USERS_COUNT:
       return {
         ...state,
-        hasMore: true,
         isLoading: true,
       };
 
-    case FETCH_FRIENDS_FAIL:
+    case FETCH_USERS_COUNT_FAIL:
       return {
         ...state,
         isLoading: false,
       };
 
-    case FETCH_FRIENDS_SUCCESS:
+    case FETCH_USERS_COUNT_SUCCESS:
       return {
         ...state,
         isLoading: false,
-        users: [...state.users, ...payload],
-        offset: state.offset + payload.length,
-        hasMore: payload.length === state.limit,
+        usersCount: payload,
       };
 
     default:

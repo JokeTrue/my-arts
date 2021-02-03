@@ -32,7 +32,8 @@ export default function ProfilePage(props) {
     dispatch(fetchProfile(props.match.params.id));
   }, [dispatch, props.match.params.id]);
 
-  const isProfileMine = currentUser && profileUser && currentUser.id === profileUser.id;
+  const isProfileMine =
+    currentUser && profileUser && currentUser.id === profileUser.id;
   return (
     <>
       <HistoryBreadcrumbs
@@ -59,11 +60,7 @@ export default function ProfilePage(props) {
         )}
 
         {profileUser && (
-          <Descriptions
-            layout="vertical"
-            bordered
-            style={{ marginTop: "30px" }}
-          >
+          <Descriptions layout="vertical" bordered>
             <Descriptions.Item label="Email">
               {profileUser.email}
             </Descriptions.Item>

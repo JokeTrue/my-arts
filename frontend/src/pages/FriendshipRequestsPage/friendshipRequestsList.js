@@ -10,7 +10,7 @@ const FriendshipRequestsList = (props) => {
   const requestsChunks = chunk(requests, 4);
 
   return (
-    <Layout style={{ padding: "0 24px", marginTop: "30px" }}>
+    <Layout style={{ padding: "0 24px" }}>
       {(requests.length === 0 || isLoading) && <Empty />}
 
       {requestsChunks.map((chunk, rowIdx) => (
@@ -24,7 +24,9 @@ const FriendshipRequestsList = (props) => {
                 cover={
                   <img
                     alt="avatar"
-                    src="https://picsum.photos/200"
+                    src={`https://picsum.photos/seed/${Math.random()
+                      .toString(36)
+                      .substring(10)}/240/240?grayscale`}
                   />
                 }
                 actions={[

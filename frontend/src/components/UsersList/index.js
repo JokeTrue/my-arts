@@ -1,7 +1,5 @@
 import { chunk } from "lodash";
-
-import Layout from "antd/es/layout/layout";
-import { Button, Card, Col, Empty, Row } from "antd";
+import { Button, Card, Col, Empty, Layout, Row, Spin, Typography } from "antd";
 import {
   EyeOutlined,
   MessageOutlined,
@@ -10,7 +8,7 @@ import {
 import { createFriendshipRequest } from "../../store/actions/friendshipRequests";
 
 const { Meta } = Card;
-
+const { Paragraph } = Typography;
 export default function UsersList(props) {
   const {
     users,
@@ -61,31 +59,45 @@ export default function UsersList(props) {
 
   return (
     <Layout style={{ padding: "0 24px", marginTop: "30px" }}>
-      {(users.length === 0 || isLoading) && <Empty />}
+      {!isLoading && users.length === 0 && <Empty />}
+
+      {isLoading && users.length === 0 && <Spin size="large" />}
 
       {users.length > 0 &&
         usersChunks.map((chunk, rowIdx) => (
-          <Row key={rowIdx} style={{ marginBottom: "30px" }}>
+          <Row key={rowIdx} style={{ marginBottom: "30px", justifyContent: "space-between" }}>
             {chunk.map((user, userIdx) => (
               <Col span={6}>
                 <Card
                   key={userIdx}
                   hoverable
                   style={{ width: 240 }}
-                  cover={<img alt="avatar" src="https://picsum.photos/200" />}
+                  cover={
+                    <img
+                      alt="avatar"
+                      src={`https://picsum.photos/seed/${Math.random()
+                        .toString(36)
+                        .substring(10)}/240/240?grayscale`}
+                    />
+                  }
                   actions={getActions(user.id, friendsIds)}
                 >
                   <Meta
                     key={`meta_${userIdx}`}
                     title={`${user.first_name} ${user.last_name}, ${user.age}`}
-                    description={`${user.location}`}
+                    description={
+                      <Paragraph ellipsis={{ rows: 2 }} style={{minHeight: "44px"}}>
+                        {user.location}
+                      </Paragraph>
+                    }
                   />
                 </Card>
               </Col>
             ))}
           </Row>
         ))}
-      {!isLoading && hasMore && (
+
+      {users.length > 0 && hasMore && (
         <Row style={{ justifyContent: "center" }}>
           <Button
             type="primary"
@@ -94,7 +106,7 @@ export default function UsersList(props) {
             style={{ width: "50%" }}
             onClick={(_) => loadMore()}
           >
-            Load More
+            {isLoading ? <Spin /> : "Load More"}
           </Button>
         </Row>
       )}

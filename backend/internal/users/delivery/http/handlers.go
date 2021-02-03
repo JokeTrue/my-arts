@@ -135,3 +135,12 @@ func (h *Handler) GetUserFriends(c *gin.Context) {
 
 	c.JSON(http.StatusOK, usersList)
 }
+
+func (h *Handler) GetUsersTotalCount(c *gin.Context) {
+	count, err := h.useCase.GetTotalCount()
+	if err != nil {
+		appErrors.JSONError(c, err, nil)
+		return
+	}
+	c.JSON(http.StatusOK, count)
+}

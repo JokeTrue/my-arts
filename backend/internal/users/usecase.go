@@ -11,4 +11,5 @@ type UseCase interface {
 	GetUserByEmail(email string) (*models.User, error)
 	SearchUsers(query string, offset, limit int) ([]*models.User, error)
 	GetUserFriends(id int, offset, limit int) ([]*models.User, error)
+	GetTotalCount() (int, error)
 }
