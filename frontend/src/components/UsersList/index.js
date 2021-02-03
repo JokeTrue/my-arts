@@ -1,7 +1,7 @@
 import { chunk } from "lodash";
 
 import Layout from "antd/es/layout/layout";
-import { Card, Col, Empty, Row } from "antd";
+import { Button, Card, Col, Empty, Row } from "antd";
 import {
   EyeOutlined,
   MessageOutlined,
@@ -19,6 +19,8 @@ export default function UsersList(props) {
     friendsIds,
     currentUserId,
     dispatch,
+    hasMore,
+    loadMore,
   } = props;
 
   const onActionProfileClick = (userId) => {
@@ -70,12 +72,7 @@ export default function UsersList(props) {
                   key={userIdx}
                   hoverable
                   style={{ width: 240 }}
-                  cover={
-                    <img
-                      alt="avatar"
-                      src="https://picsum.photos/200"
-                    />
-                  }
+                  cover={<img alt="avatar" src="https://picsum.photos/200" />}
                   actions={getActions(user.id, friendsIds)}
                 >
                   <Meta
@@ -88,6 +85,19 @@ export default function UsersList(props) {
             ))}
           </Row>
         ))}
+      {!isLoading && hasMore && (
+        <Row style={{ justifyContent: "center" }}>
+          <Button
+            type="primary"
+            block
+            ghost
+            style={{ width: "50%" }}
+            onClick={(_) => loadMore()}
+          >
+            Load More
+          </Button>
+        </Row>
+      )}
     </Layout>
   );
 }

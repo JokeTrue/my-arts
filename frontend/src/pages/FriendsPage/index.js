@@ -21,11 +21,14 @@ export default function FriendsPage(props) {
   const dispatch = useDispatch();
   const { user } = useCurrentUser();
 
-  const { users: friends, isLoading } = useSelector((state) => state.Friends);
+  const { users: friends, isLoading, offset, limit, hasMore } = useSelector(
+    (state) => state.Friends
+  );
+  const loadMore = () => dispatch(fetchFriends(user.id, offset, limit));
 
   useEffect(() => {
     if (user !== null) {
-      dispatch(fetchFriends(user.id));
+      dispatch(fetchFriends(user.id, offset, limit));
     }
   }, [dispatch, user]);
 
@@ -42,6 +45,8 @@ export default function FriendsPage(props) {
         currentUserId={user?.id}
         history={props.history}
         friendsIds={friends.map((item) => item.id)}
+        hasMore={hasMore}
+        loadMore={loadMore}
       />
     </>
   );

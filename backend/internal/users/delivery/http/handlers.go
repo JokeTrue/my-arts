@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/JokeTrue/my-arts/pkg/utils"
 	"net/http"
 	"strconv"
 	"time"
@@ -98,8 +99,13 @@ func (h *Handler) GetUser(c *gin.Context) {
 
 func (h *Handler) SearchUsers(c *gin.Context) {
 	query := c.Query("query")
+	offset, limit, err := utils.GetOffsetLimit(c)
+	if err != nil {
+		appErrors.JSONError(c, err, nil)
+		return
+	}
 
-	usersList, err := h.useCase.SearchUsers(query)
+	usersList, err := h.useCase.SearchUsers(query, offset, limit)
 	if err != nil {
 		appErrors.JSONError(c, err, query)
 		return
@@ -109,13 +115,19 @@ func (h *Handler) SearchUsers(c *gin.Context) {
 }
 
 func (h *Handler) GetUserFriends(c *gin.Context) {
+	offset, limit, err := utils.GetOffsetLimit(c)
+	if err != nil {
+		appErrors.JSONError(c, err, nil)
+		return
+	}
+
 	userId, err := jwt.GetCurrentUserID(c)
 	if err != nil {
 		appErrors.JSONError(c, err, nil)
 		return
 	}
 
-	usersList, err := h.useCase.GetUserFriends(userId)
+	usersList, err := h.useCase.GetUserFriends(userId, offset, limit)
 	if err != nil {
 		appErrors.JSONError(c, err, userId)
 		return

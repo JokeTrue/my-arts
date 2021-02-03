@@ -7,6 +7,9 @@ import {
 const initialState = {
   users: [],
   isLoading: false,
+  offset: 0,
+  limit: 100,
+  hasMore: true,
 };
 
 export default function (state = initialState, action) {
@@ -16,6 +19,7 @@ export default function (state = initialState, action) {
     case FETCH_FRIENDS:
       return {
         ...state,
+        hasMore: true,
         isLoading: true,
       };
 
@@ -28,8 +32,10 @@ export default function (state = initialState, action) {
     case FETCH_FRIENDS_SUCCESS:
       return {
         ...state,
-        users: payload,
         isLoading: false,
+        users: [...state.users, ...payload],
+        offset: state.offset + payload.length,
+        hasMore: payload.length === state.limit,
       };
 
     default:

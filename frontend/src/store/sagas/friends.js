@@ -10,8 +10,11 @@ import {
 
 function* fetchFriendsSaga(action) {
   try {
-    const { userId } = action.payload;
-    const res = yield callGet(`/users/user/${userId}/friends`);
+    const { userId, offset, limit } = action.payload;
+    const res = yield callGet(`/users/user/${userId}/friends`, {
+      offset,
+      limit,
+    });
     if (res.status !== 200) {
       openNotification("error", "Fetching Friends Error", res.data.message);
       yield put({ type: FETCH_FRIENDS_FAIL });

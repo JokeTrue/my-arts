@@ -28,21 +28,27 @@ export default function UsersPage(props) {
   const { user } = useCurrentUser();
   const [query, setQuery] = useState("");
 
-  const { users, isLoading: isUsersLoading } = useSelector(
-    (state) => state.Users
-  );
-  const { users: friends, isLoading: isFriendsLoading } = useSelector(
-    (state) => state.Friends
-  );
+  const {
+    users,
+    isLoading: isUsersLoading,
+    offset,
+    limit,
+    hasMore,
+  } = useSelector((state) => state.Users);
+  const {
+    users: friends,
+    isLoading: isFriendsLoading,
+  } = useSelector((state) => state.Friends);
+  const loadMore = () => dispatch(fetchUsers(user.id, offset, limit));
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchFriends(user.id));
+      dispatch(fetchFriends(user.id, friends.length, 10_000));
     }
   }, [dispatch, user]);
 
   useEffect(() => {
-    dispatch(fetchUsers(query));
+    dispatch(fetchUsers(query, offset, limit));
   }, [dispatch, query]);
 
   const isLoading = isUsersLoading || isFriendsLoading;
@@ -78,6 +84,8 @@ export default function UsersPage(props) {
           currentUserId={user?.id}
           history={props.history}
           friendsIds={friends.map((item) => item.id)}
+          hasMore={hasMore}
+          loadMore={loadMore}
         />
       </Layout>
     </>

@@ -1,7 +1,7 @@
 package mysql
 
 const (
-	QueryGetUsers = "SELECT * FROM users"
+	QueryGetUsers = "SELECT * FROM users ORDER BY id LIMIT ? OFFSET ?"
 
 	QueryGetUserByID = "SELECT * FROM users WHERE id = ?"
 
@@ -13,7 +13,7 @@ const (
 
 	QueryUpdateUser = "UPDATE users SET first_name=?, last_name=?, age=?, gender=?, location=?, biography=? WHERE id=?"
 
-	QuerySearchUsers = "SELECT * FROM users %s LIMIT 100"
+	QuerySearchUsers = "SELECT * FROM users %s ORDER BY id LIMIT ? OFFSET ?"
 
 	QueryGetUserFriends = `
 	WITH friendship AS (
@@ -28,5 +28,6 @@ const (
 	
 	SELECT u.*
 	FROM friendship f
-	LEFT JOIN users AS u ON f.user_2 = u.id`
+	LEFT JOIN users AS u ON f.user_2 = u.id
+	LIMIT ? OFFSET ?`
 )

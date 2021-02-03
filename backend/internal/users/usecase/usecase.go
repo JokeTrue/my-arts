@@ -17,8 +17,8 @@ func (u *UsersUseCase) Delete(id int) error {
 	return u.repo.Delete(id)
 }
 
-func (u *UsersUseCase) GetUsers() ([]models.User, error) {
-	return u.repo.GetUsers()
+func (u *UsersUseCase) GetUsers(offset, limit int) ([]models.User, error) {
+	return u.repo.GetUsers(offset, limit)
 }
 
 func (u *UsersUseCase) Create(user models.User) (int, error) {
@@ -37,10 +37,10 @@ func (u *UsersUseCase) GetUserByEmail(email string) (*models.User, error) {
 	return u.repo.GetUserByEmail(email)
 }
 
-func (u *UsersUseCase) SearchUsers(query string) ([]*models.User, error) {
-	return u.repo.SearchUsers(query)
+func (u *UsersUseCase) SearchUsers(query string, offset, limit int) ([]*models.User, error) {
+	return u.repo.SearchUsers(query, offset, limit)
 }
 
-func (u *UsersUseCase) GetUserFriends(id int) ([]*models.User, error) {
-	return u.repo.GetUserFriends(id)
+func (u *UsersUseCase) GetUserFriends(id int, offset, limit int) ([]*models.User, error) {
+	return u.repo.GetUserFriends(id, offset, limit)
 }

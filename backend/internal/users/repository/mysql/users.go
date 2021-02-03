@@ -36,9 +36,9 @@ func (r *UsersRepository) Delete(id int) error {
 	return nil
 }
 
-func (r *UsersRepository) GetUsers() ([]models.User, error) {
+func (r *UsersRepository) GetUsers(offset, limit int) ([]models.User, error) {
 	list := []models.User{}
-	if err := r.db.Select(&list, QueryGetUsers); err != nil {
+	if err := r.db.Select(&list, QueryGetUsers, limit, offset); err != nil {
 		return nil, users.ErrUserQuery
 	}
 	return list, nil
@@ -108,7 +108,7 @@ func (r *UsersRepository) GetUserByEmail(email string) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *UsersRepository) SearchUsers(query string) ([]*models.User, error) {
+func (r *UsersRepository) SearchUsers(query string, offset, limit int) ([]*models.User, error) {
 	list := []*models.User{}
 
 	var filterExpression string
@@ -127,15 +127,15 @@ func (r *UsersRepository) SearchUsers(query string) ([]*models.User, error) {
 	}
 
 	searchQuery := fmt.Sprintf(QuerySearchUsers, filterExpression)
-	if err := r.db.Select(&list, searchQuery); err != nil {
+	if err := r.db.Select(&list, searchQuery, limit, offset); err != nil {
 		return nil, users.ErrUserQuery
 	}
 	return list, nil
 }
 
-func (r *UsersRepository) GetUserFriends(id int) ([]*models.User, error) {
+func (r *UsersRepository) GetUserFriends(id int, offset, limit int) ([]*models.User, error) {
 	list := []*models.User{}
-	if err := r.db.Select(&list, QueryGetUserFriends, id, id); err != nil {
+	if err := r.db.Select(&list, QueryGetUserFriends, id, id, limit, offset); err != nil {
 		return nil, users.ErrUserQuery
 	}
 	return list, nil
