@@ -1,0 +1,13 @@
+Running 2m test @ https://my-arts.herokuapp.com/api/users/search?query=t%20l&offset=0&limit=1000000
+  12 threads and 100 connections
+  Thread Stats   Avg      Stdev     Max   +/- Stdev
+    Latency     8.26s     4.71s   32.08s    72.65%
+    Req/Sec     2.16      3.11    20.00     88.88%
+  Latency Distribution
+     50%    7.47s 
+     75%   10.53s 
+     90%   14.49s 
+     99%   23.77s 
+  1319 requests in 2.00m, 652.24MB read
+Requests/sec:     10.98
+Transfer/sec:      5.43MB

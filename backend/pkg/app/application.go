@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/JokeTrue/my-arts/pkg/middleware"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -70,7 +71,7 @@ type Application struct {
 
 func NewApplication(logger logging.Logger, settings Settings) *Application {
 	router := gin.Default()
-	router.Use(gin.Recovery())
+	router.Use(middleware.RequestCancelRecover())
 
 	if gin.Mode() == "release" {
 		router.Static("/static/", "./frontend/static")
@@ -168,6 +169,7 @@ func (a *Application) setupDB() {
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup db connection")
 	}
+	db.SetMaxOpenConns(300)
 
 	m, err := migrate.New("file://"+a.settings.MigrationsPath, "mysql://"+a.settings.DatabaseDSN)
 	if err != nil {
