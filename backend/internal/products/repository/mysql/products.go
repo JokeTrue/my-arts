@@ -11,11 +11,12 @@ import (
 )
 
 type ProductsRepository struct {
-	db *sqlx.DB
+	writeDB *sqlx.DB
+	readDB  *sqlx.DB
 }
 
-func NewProductsRepository(db *sqlx.DB) *ProductsRepository {
-	return &ProductsRepository{db: db}
+func NewProductsRepository(writeDB, readDB *sqlx.DB) *ProductsRepository {
+	return &ProductsRepository{writeDB: writeDB, readDB: readDB}
 }
 
 func (r *ProductsRepository) Create(product models.Product) (int, error) {
@@ -24,7 +25,7 @@ func (r *ProductsRepository) Create(product models.Product) (int, error) {
 
 func (r *ProductsRepository) GetProduct(id int) (*models.Product, error) {
 	var product models.Product
-	if err := r.db.Get(&product, QueryGetProductByID, id); err != nil {
+	if err := r.readDB.Get(&product, QueryGetProductByID, id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, products.ErrProductQuery
 		}
@@ -52,7 +53,7 @@ func (r *ProductsRepository) Delete(id int) error {
 		QueryDeleteProduct,
 	}
 
-	tx, err := r.db.Beginx()
+	tx, err := r.writeDB.Beginx()
 	if err != nil {
 		return err
 	}
@@ -75,7 +76,7 @@ func (r *ProductsRepository) GetProducts(states []string) ([]*models.Product, er
 	list := []*models.Product{}
 
 	query := fmt.Sprintf(QueryGetProducts, strings.Join(states, "','"))
-	if err := r.db.Select(&list, query); err != nil {
+	if err := r.readDB.Select(&list, query); err != nil {
 		return nil, products.ErrProductQuery
 	}
 
@@ -96,7 +97,7 @@ func (r *ProductsRepository) GetUserProducts(userId int, states []string) ([]*mo
 
 	list := []*models.Product{}
 	query := fmt.Sprintf(QueryGetUserProducts, strings.Join(states, "','"))
-	if err := r.db.Select(&list, query, userId); err != nil {
+	if err := r.readDB.Select(&list, query, userId); err != nil {
 		return nil, products.ErrProductQuery
 	}
 
@@ -127,7 +128,7 @@ func (r *ProductsRepository) setProductsPhotos(productsList ...*models.Product) 
 
 	var photos []*models.ProductPhoto
 	query := fmt.Sprintf(QueryGetProductPhotos, strings.Join(productIDs, ","))
-	if err := r.db.Select(&photos, query); err != nil && err != sql.ErrNoRows {
+	if err := r.writeDB.Select(&photos, query); err != nil && err != sql.ErrNoRows {
 		return products.ErrProductQuery
 	}
 
@@ -157,7 +158,7 @@ func (r *ProductsRepository) setProductsTags(productsList ...*models.Product) er
 
 	var tags []*models.ProductTag
 	query := fmt.Sprintf(QueryGetProductTags, strings.Join(productIDs, ","))
-	if err := r.db.Select(&tags, query); err != nil && err != sql.ErrNoRows {
+	if err := r.writeDB.Select(&tags, query); err != nil && err != sql.ErrNoRows {
 		return products.ErrProductQuery
 	}
 

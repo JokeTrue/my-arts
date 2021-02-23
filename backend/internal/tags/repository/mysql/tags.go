@@ -8,15 +8,16 @@ import (
 )
 
 type TagsRepository struct {
-	db *sqlx.DB
+	writeDB *sqlx.DB
+	readDB  *sqlx.DB
 }
 
-func NewTagsRepository(db *sqlx.DB) *TagsRepository {
-	return &TagsRepository{db: db}
+func NewTagsRepository(writeDB, readDB *sqlx.DB) *TagsRepository {
+	return &TagsRepository{writeDB: writeDB, readDB: readDB}
 }
 
 func (r *TagsRepository) Delete(id int) error {
-	res, err := r.db.Exec(QueryDeleteTag, id)
+	res, err := r.writeDB.Exec(QueryDeleteTag, id)
 	if err != nil {
 		return tags.ErrTagQuery
 	}
@@ -34,14 +35,14 @@ func (r *TagsRepository) Delete(id int) error {
 
 func (r *TagsRepository) GetTags() ([]*models.ProductTag, error) {
 	list := []*models.ProductTag{}
-	if err := r.db.Select(&list, QueryGetTags); err != nil {
+	if err := r.readDB.Select(&list, QueryGetTags); err != nil {
 		return nil, tags.ErrTagQuery
 	}
 	return list, nil
 }
 
 func (r *TagsRepository) Create(tag models.ProductTag) (int, error) {
-	result, err := r.db.Exec(QueryCreateTag, tag.ProductID, tag.Title)
+	result, err := r.writeDB.Exec(QueryCreateTag, tag.ProductID, tag.Title)
 	if err != nil {
 		return 0, tags.ErrTagQuery
 	}
@@ -56,7 +57,7 @@ func (r *TagsRepository) Create(tag models.ProductTag) (int, error) {
 
 func (r *TagsRepository) GetTag(id int) (*models.ProductTag, error) {
 	var tag models.ProductTag
-	if err := r.db.Get(&tag, QueryGetTagByID, id); err != nil {
+	if err := r.readDB.Get(&tag, QueryGetTagByID, id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, tags.ErrTagNotFound
 		}
@@ -67,7 +68,7 @@ func (r *TagsRepository) GetTag(id int) (*models.ProductTag, error) {
 }
 
 func (r *TagsRepository) Update(tag models.ProductTag) (*models.ProductTag, error) {
-	res, err := r.db.Exec(QueryUpdateTag, tag.Title, tag.ID)
+	res, err := r.writeDB.Exec(QueryUpdateTag, tag.Title, tag.ID)
 	if err != nil {
 		return nil, tags.ErrTagQuery
 	}
@@ -85,7 +86,7 @@ func (r *TagsRepository) Update(tag models.ProductTag) (*models.ProductTag, erro
 
 func (r *TagsRepository) GetProductTags(productId int) ([]*models.ProductTag, error) {
 	list := []*models.ProductTag{}
-	if err := r.db.Select(&list, QueryGetProductTags, productId); err != nil {
+	if err := r.readDB.Select(&list, QueryGetProductTags, productId); err != nil {
 		return nil, tags.ErrTagQuery
 	}
 	return list, nil

@@ -1,16 +1,13 @@
 package app
 
 import (
-	"github.com/JokeTrue/my-arts/pkg/middleware"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"path/filepath"
-
 	"github.com/JokeTrue/my-arts/internal/products"
 	productsDelivery "github.com/JokeTrue/my-arts/internal/products/delivery/http"
 	productsRepo "github.com/JokeTrue/my-arts/internal/products/repository/mysql"
 	productsUseCase "github.com/JokeTrue/my-arts/internal/products/usecase"
+	"github.com/JokeTrue/my-arts/pkg/middleware"
+	"github.com/JokeTrue/my-arts/pkg/utils"
+	"net/http"
 
 	"github.com/JokeTrue/my-arts/internal/reviews"
 	reviewsDelivery "github.com/JokeTrue/my-arts/internal/reviews/delivery/http"
@@ -47,9 +44,12 @@ import (
 )
 
 type Settings struct {
-	Debug           bool   `env:"DEBUG" envDefault:"false"`
-	Port            string `env:"PORT" envDefault:"8080"`
-	DatabaseDSN     string `env:"DATABASE_DSN"`
+	Debug bool   `env:"DEBUG" envDefault:"false"`
+	Port  string `env:"PORT" envDefault:"8080"`
+
+	MasterDatabaseDSN string   `env:"MASTER_DB_DSN"`
+	SlaveDatabaseDSNs []string `env:"SLAVE_DB_DSNS" envSeparator:","`
+
 	ShutdownTimeout int    `env:"SHUTDOWN_TIMEOUT" envDefault:"30"`
 	SecretKey       string `env:"SECRET_KEY"`
 	MigrationsPath  string `env:"MIGRATIONS_PATH"`
@@ -57,9 +57,12 @@ type Settings struct {
 
 type Application struct {
 	settings Settings
-	db       *sqlx.DB
-	router   *gin.Engine
-	logger   logging.Logger
+
+	writeDB *sqlx.DB
+	readDBs []*sqlx.DB
+
+	router *gin.Engine
+	logger logging.Logger
 
 	usersUseCase      users.UseCase
 	productsUseCase   products.UseCase
@@ -70,7 +73,7 @@ type Application struct {
 }
 
 func NewApplication(logger logging.Logger, settings Settings) *Application {
-	router := gin.Default()
+	router := gin.New()
 	router.Use(middleware.RequestCancelRecover())
 
 	if gin.Mode() == "release" {
@@ -91,7 +94,7 @@ func NewApplication(logger logging.Logger, settings Settings) *Application {
 	}
 
 	// 1. Setup Database
-	application.setupDB()
+	application.setupDatabases()
 	//application.setupMockData("db/mock_data/")
 
 	// 2. Setup UseCases + Endpoints
@@ -116,37 +119,44 @@ func (a *Application) Run() http.Handler {
 }
 
 func (a *Application) Stop() {
-	if a.db == nil {
+	if a.writeDB == nil && a.readDBs == nil {
 		return
 	}
-	if err := a.db.Close(); err != nil {
+
+	if err := a.writeDB.Close(); err != nil {
 		a.logger.WithError(err).Error("failed to close database connection")
+	}
+
+	for _, slave := range a.readDBs {
+		if err := slave.Close(); err != nil {
+			a.logger.WithError(err).Error("failed to close slave database connection")
+		}
 	}
 }
 
 func (a *Application) setupUseCases() {
 	// Users
-	usersRepository := usersRepo.NewUsersRepository(a.db)
+	usersRepository := usersRepo.NewUsersRepository(a.writeDB, utils.GetReadDatabase(a.readDBs))
 	a.usersUseCase = usersUseCase.NewUsersUseCase(usersRepository)
 
 	// Products
-	productsRepository := productsRepo.NewProductsRepository(a.db)
+	productsRepository := productsRepo.NewProductsRepository(a.writeDB, utils.GetReadDatabase(a.readDBs))
 	a.productsUseCase = productsUseCase.NewProductsUseCase(productsRepository)
 
 	// Reviews
-	reviewsRepository := reviewsRepo.NewProductsRepository(a.db)
+	reviewsRepository := reviewsRepo.NewProductsRepository(a.writeDB, utils.GetReadDatabase(a.readDBs))
 	a.reviewsUseCase = reviewsUseCase.NewReviewsUseCase(reviewsRepository)
 
 	// Categories
-	categoriesRepository := categoriesRepo.NewCategoriesRepository(a.db)
+	categoriesRepository := categoriesRepo.NewCategoriesRepository(a.writeDB, utils.GetReadDatabase(a.readDBs))
 	a.categoriesUseCase = categoriesUseCase.NewCategoriesUseCase(categoriesRepository)
 
 	// Tags
-	tagsRepository := tagsRepo.NewTagsRepository(a.db)
+	tagsRepository := tagsRepo.NewTagsRepository(a.writeDB, utils.GetReadDatabase(a.readDBs))
 	a.tagsUseCase = tagsUseCase.NewTagsUseCase(tagsRepository)
 
 	// Friendship
-	friendshipRepository := friendshipRepo.NewFriendshipRepository(a.db)
+	friendshipRepository := friendshipRepo.NewFriendshipRepository(a.writeDB, utils.GetReadDatabase(a.readDBs))
 	a.friendshipUseCase = friendshipUseCase.NewFriendshipUseCase(friendshipRepository)
 }
 
@@ -164,14 +174,17 @@ func (a *Application) setupJWT() *gin.RouterGroup {
 	return apiGroup
 }
 
-func (a *Application) setupDB() {
-	db, err := sqlx.Connect("mysql", a.settings.DatabaseDSN+"?parseTime=true")
+func (a *Application) setupDatabases() {
+	var err error
+
+	// 1. Setup Master Database
+	a.writeDB, err = sqlx.Connect("mysql", a.settings.MasterDatabaseDSN+"?parseTime=true")
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup db connection")
 	}
-	db.SetMaxOpenConns(300)
+	a.writeDB.SetMaxOpenConns(300)
 
-	m, err := migrate.New("file://"+a.settings.MigrationsPath, "mysql://"+a.settings.DatabaseDSN)
+	m, err := migrate.New("file://"+a.settings.MigrationsPath, "mysql://"+a.settings.MasterDatabaseDSN)
 	if err != nil {
 		a.logger.WithError(err).Panic("failed to setup migrations")
 	}
@@ -180,44 +193,17 @@ func (a *Application) setupDB() {
 		a.logger.WithError(err).Panic("failed to up migrations")
 	}
 
-	a.db = db
-}
-
-func (a *Application) setupMockData(mockPath string) {
-	if !a.settings.Debug {
-		return
+	// 2. Setup Slave Databases
+	if a.settings.SlaveDatabaseDSNs == nil {
+		a.logger.Panic("empty slave databases list")
 	}
 
-	var files []string
-	if err := filepath.Walk(mockPath, func(path string, info os.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		files = append(files, path)
-		return nil
-	}); err != nil {
-		panic(err)
-	}
-
-	tx, err := a.db.Beginx()
-	if err != nil {
-		a.logger.WithError(err).Error("failed to load mock data")
-	}
-
-	for _, file := range files {
-		script, err := ioutil.ReadFile(file)
+	for _, dsn := range a.settings.SlaveDatabaseDSNs {
+		slave, err := sqlx.Connect("mysql", dsn+"?parseTime=true")
 		if err != nil {
-			a.logger.WithError(err).Error("failed to load mock data")
-			_ = tx.Rollback()
-			return
+			a.logger.WithError(err).Panic("failed to setup slave db connection")
 		}
-
-		if _, err := a.db.Exec(string(script)); err != nil {
-			a.logger.WithError(err).Error("failed to load mock data")
-			_ = tx.Rollback()
-			return
-		}
+		slave.SetMaxOpenConns(300)
+		a.readDBs = append(a.readDBs, slave)
 	}
-
-	_ = tx.Commit()
 }

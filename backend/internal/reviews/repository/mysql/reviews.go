@@ -9,16 +9,17 @@ import (
 )
 
 type ReviewsRepository struct {
-	db *sqlx.DB
+	writeDB *sqlx.DB
+	readDB  *sqlx.DB
 }
 
-func NewProductsRepository(db *sqlx.DB) *ReviewsRepository {
-	return &ReviewsRepository{db: db}
+func NewProductsRepository(writeDB, readDB *sqlx.DB) *ReviewsRepository {
+	return &ReviewsRepository{writeDB: writeDB, readDB: readDB}
 }
 
 func (r *ReviewsRepository) GetReview(id int) (*models.Review, error) {
 	var review models.Review
-	if err := r.db.Get(&review, QueryGetReviewByID, id); err != nil {
+	if err := r.readDB.Get(&review, QueryGetReviewByID, id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, reviews.ErrReviewNotFound
 		}
@@ -29,7 +30,7 @@ func (r *ReviewsRepository) GetReview(id int) (*models.Review, error) {
 }
 
 func (r *ReviewsRepository) Delete(id int) error {
-	res, err := r.db.Exec(QueryDeleteReview, id)
+	res, err := r.writeDB.Exec(QueryDeleteReview, id)
 	if err != nil {
 		return users.ErrUserQuery
 	}
@@ -46,7 +47,7 @@ func (r *ReviewsRepository) Delete(id int) error {
 }
 
 func (r *ReviewsRepository) Create(review models.Review) (int, error) {
-	result, err := r.db.Exec(
+	result, err := r.writeDB.Exec(
 		QueryCreateReview,
 		review.UserID,
 		review.ReviewerID,
@@ -68,7 +69,7 @@ func (r *ReviewsRepository) Create(review models.Review) (int, error) {
 }
 
 func (r *ReviewsRepository) Update(review models.Review) (*models.Review, error) {
-	res, err := r.db.Exec(
+	res, err := r.writeDB.Exec(
 		QueryUpdateReview,
 		review.Comment,
 		review.DeliveryRating,
@@ -93,7 +94,7 @@ func (r *ReviewsRepository) Update(review models.Review) (*models.Review, error)
 
 func (r *ReviewsRepository) GetUserReviews(userId int) ([]*models.Review, error) {
 	list := []*models.Review{}
-	if err := r.db.Select(&list, QueryGetUserReviews, userId); err != nil {
+	if err := r.readDB.Select(&list, QueryGetUserReviews, userId); err != nil {
 		return nil, users.ErrUserQuery
 	}
 	return list, nil

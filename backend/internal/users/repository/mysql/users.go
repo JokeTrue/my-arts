@@ -12,15 +12,16 @@ import (
 )
 
 type UsersRepository struct {
-	db *sqlx.DB
+	writeDB *sqlx.DB
+	readDB  *sqlx.DB
 }
 
-func NewUsersRepository(db *sqlx.DB) *UsersRepository {
-	return &UsersRepository{db: db}
+func NewUsersRepository(writeDB, readDB *sqlx.DB) *UsersRepository {
+	return &UsersRepository{writeDB: writeDB, readDB: readDB}
 }
 
 func (r *UsersRepository) Delete(id int) error {
-	res, err := r.db.Exec(QueryDeleteUser, id)
+	res, err := r.writeDB.Exec(QueryDeleteUser, id)
 	if err != nil {
 		return users.ErrUserQuery
 	}
@@ -38,7 +39,7 @@ func (r *UsersRepository) Delete(id int) error {
 
 func (r *UsersRepository) GetUsers(offset, limit int) ([]models.User, error) {
 	list := []models.User{}
-	if err := r.db.Select(&list, QueryGetUsers, limit, offset); err != nil {
+	if err := r.readDB.Select(&list, QueryGetUsers, limit, offset); err != nil {
 		return nil, users.ErrUserQuery
 	}
 	return list, nil
@@ -50,7 +51,7 @@ func (r *UsersRepository) Create(user models.User) (int, error) {
 		return 0, err
 	}
 
-	result, err := r.db.Exec(
+	result, err := r.writeDB.Exec(
 		QueryCreateUser,
 		user.Email, string(hashedPassword), user.FirstName, user.LastName, user.Age, user.Gender, user.Location, user.Biography,
 	)
@@ -68,7 +69,7 @@ func (r *UsersRepository) Create(user models.User) (int, error) {
 
 func (r *UsersRepository) GetUserByID(id int) (*models.User, error) {
 	var user models.User
-	if err := r.db.Get(&user, QueryGetUserByID, id); err != nil {
+	if err := r.readDB.Get(&user, QueryGetUserByID, id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, users.ErrUserNotFound
 		}
@@ -78,7 +79,7 @@ func (r *UsersRepository) GetUserByID(id int) (*models.User, error) {
 }
 
 func (r *UsersRepository) Update(user models.User) (*models.User, error) {
-	res, err := r.db.Exec(
+	res, err := r.writeDB.Exec(
 		QueryUpdateUser,
 		user.FirstName, user.LastName, user.Age, user.Gender, user.Location, user.Biography, user.ID,
 	)
@@ -99,7 +100,7 @@ func (r *UsersRepository) Update(user models.User) (*models.User, error) {
 
 func (r *UsersRepository) GetUserByEmail(email string) (*models.User, error) {
 	var user models.User
-	if err := r.db.Get(&user, QueryGetUserByEmail, email); err != nil {
+	if err := r.readDB.Get(&user, QueryGetUserByEmail, email); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, users.ErrUserNotFound
 		}
@@ -115,7 +116,7 @@ func (r *UsersRepository) SearchUsers(query string, offset, limit int) ([]*model
 	filterExpression := " WHERE " + strings.Join(searchFilters, " AND ")
 	searchQuery := fmt.Sprintf(QuerySearchUsers, filterExpression)
 
-	if err := r.db.Select(&list, searchQuery, limit, offset); err != nil {
+	if err := r.readDB.Select(&list, searchQuery, limit, offset); err != nil {
 		return nil, users.ErrUserQuery
 	}
 	return list, nil
@@ -123,7 +124,7 @@ func (r *UsersRepository) SearchUsers(query string, offset, limit int) ([]*model
 
 func (r *UsersRepository) GetUserFriends(id int, offset, limit int) ([]*models.User, error) {
 	list := []*models.User{}
-	if err := r.db.Select(&list, QueryGetUserFriends, id, id, limit, offset); err != nil {
+	if err := r.readDB.Select(&list, QueryGetUserFriends, id, id, limit, offset); err != nil {
 		return nil, users.ErrUserQuery
 	}
 	return list, nil
@@ -131,7 +132,7 @@ func (r *UsersRepository) GetUserFriends(id int, offset, limit int) ([]*models.U
 
 func (r *UsersRepository) GetTotalCount() (int, error) {
 	var count int
-	if err := r.db.QueryRow(QueryGetTotalCount).Scan(&count); err != nil {
+	if err := r.readDB.QueryRow(QueryGetTotalCount).Scan(&count); err != nil {
 		return 0, users.ErrUserQuery
 	}
 	return count, nil

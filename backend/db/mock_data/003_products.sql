@@ -1,3 +1,0 @@
-INSERT INTO products (id, user_id, category_id, title, general_description, product_description, state, price_amount, price_currency)
-VALUES
-    (1, 2, 1, 'Cor Auri - 36'' Large Abstract Artwork (2020)', 'My paintings are securely packaged, insured and shipped through a reputable courier to ensure they reach you safely.', 'Size: 91.44 x 91.44 x 1.98 cm (unframed).\nSigned on the back', 'IN_PROGRESS', 978.83, 'EUR' )
