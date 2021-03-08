@@ -2,9 +2,12 @@ package utils
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"math/rand"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Contains returns true if target string is present in the strings slice.
@@ -38,4 +41,9 @@ func GetOffsetLimit(c *gin.Context) (int, int, error) {
 	}
 
 	return offset, limit, nil
+}
+
+func GetReadDatabase(databases []*sqlx.DB) *sqlx.DB {
+	rand.Seed(time.Now().Unix())
+	return databases[rand.Intn(len(databases))]
 }

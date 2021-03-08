@@ -8,15 +8,16 @@ import (
 )
 
 type CategoriesRepository struct {
-	db *sqlx.DB
+	writeDB *sqlx.DB
+	readDB  *sqlx.DB
 }
 
-func NewCategoriesRepository(db *sqlx.DB) *CategoriesRepository {
-	return &CategoriesRepository{db: db}
+func NewCategoriesRepository(writeDB, readDB *sqlx.DB) *CategoriesRepository {
+	return &CategoriesRepository{writeDB: writeDB, readDB: readDB}
 }
 
 func (r *CategoriesRepository) Delete(id int) error {
-	res, err := r.db.Exec(QueryDeleteCategory, id)
+	res, err := r.writeDB.Exec(QueryDeleteCategory, id)
 	if err != nil {
 		return categories.ErrCategoryQuery
 	}
@@ -34,7 +35,7 @@ func (r *CategoriesRepository) Delete(id int) error {
 
 func (r *CategoriesRepository) GetCategories() ([]*models.Category, error) {
 	list := []*models.Category{}
-	if err := r.db.Select(&list, QueryGetCategories); err != nil {
+	if err := r.readDB.Select(&list, QueryGetCategories); err != nil {
 		return nil, categories.ErrCategoryQuery
 	}
 	return list, nil
@@ -42,7 +43,7 @@ func (r *CategoriesRepository) GetCategories() ([]*models.Category, error) {
 
 func (r *CategoriesRepository) GetCategory(id int) (*models.Category, error) {
 	var category models.Category
-	if err := r.db.Get(&category, QueryGetCategoryByID, id); err != nil {
+	if err := r.readDB.Get(&category, QueryGetCategoryByID, id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, categories.ErrCategoryNotFound
 		}
@@ -53,7 +54,7 @@ func (r *CategoriesRepository) GetCategory(id int) (*models.Category, error) {
 }
 
 func (r *CategoriesRepository) Create(category models.Category) (int, error) {
-	result, err := r.db.Exec(QueryCreateCategory, category.Title)
+	result, err := r.writeDB.Exec(QueryCreateCategory, category.Title)
 	if err != nil {
 		return 0, categories.ErrCategoryQuery
 	}
@@ -67,7 +68,7 @@ func (r *CategoriesRepository) Create(category models.Category) (int, error) {
 }
 
 func (r *CategoriesRepository) Update(category models.Category) (*models.Category, error) {
-	res, err := r.db.Exec(QueryUpdateCategory, category.Title, category.ID)
+	res, err := r.writeDB.Exec(QueryUpdateCategory, category.Title, category.ID)
 	if err != nil {
 		return nil, categories.ErrCategoryQuery
 	}

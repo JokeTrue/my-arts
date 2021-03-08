@@ -11,16 +11,17 @@ import (
 )
 
 type FriendshipRepository struct {
-	db *sqlx.DB
+	writeDB *sqlx.DB
+	readDB  *sqlx.DB
 }
 
-func NewFriendshipRepository(db *sqlx.DB) *FriendshipRepository {
-	return &FriendshipRepository{db: db}
+func NewFriendshipRepository(writeDB, readDB *sqlx.DB) *FriendshipRepository {
+	return &FriendshipRepository{writeDB: writeDB, readDB: readDB}
 }
 
 func (r *FriendshipRepository) Get(id int) (*models.FriendshipRequest, error) {
 	var request models.FriendshipRequest
-	if err := r.db.Get(&request, QueryGetReviewByID, id); err != nil {
+	if err := r.readDB.Get(&request, QueryGetReviewByID, id); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, friendship.ErrFriendshipNotFound
 		}
@@ -33,7 +34,7 @@ func (r *FriendshipRepository) Accept(user1, user2 int) error {
 	ids := []int{user1, user2}
 	sort.Ints(ids)
 
-	result, err := r.db.Exec(QueryAcceptFriendshipRequest, ids[0], ids[1])
+	result, err := r.writeDB.Exec(QueryAcceptFriendshipRequest, ids[0], ids[1])
 	if err != nil {
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			return friendship.ErrFriendshipAlreadyExists
@@ -50,7 +51,7 @@ func (r *FriendshipRepository) Accept(user1, user2 int) error {
 }
 
 func (r *FriendshipRepository) Delete(id int) error {
-	res, err := r.db.Exec(QueryDeleteFriendshipRequest, id)
+	res, err := r.writeDB.Exec(QueryDeleteFriendshipRequest, id)
 	if err != nil {
 		return tags.ErrTagQuery
 	}
@@ -67,7 +68,7 @@ func (r *FriendshipRepository) Delete(id int) error {
 }
 
 func (r *FriendshipRepository) Create(request models.FriendshipRequest) (int, error) {
-	result, err := r.db.Exec(QueryCreateFriendshipRequest, request.ActorID, request.FriendID)
+	result, err := r.writeDB.Exec(QueryCreateFriendshipRequest, request.ActorID, request.FriendID)
 	if err != nil {
 		if strings.Contains(err.Error(), "Duplicate entry") {
 			return 0, friendship.ErrFriendshipRequestAlreadyExists
@@ -85,7 +86,7 @@ func (r *FriendshipRepository) Create(request models.FriendshipRequest) (int, er
 
 func (r *FriendshipRepository) GetList(userId int) ([]*models.FriendshipRequest, error) {
 	list := []*models.FriendshipRequest{}
-	if err := r.db.Select(&list, QueryGetUserFriendshipRequests, userId); err != nil {
+	if err := r.readDB.Select(&list, QueryGetUserFriendshipRequests, userId); err != nil {
 		return nil, friendship.ErrFriendshipQuery
 	}
 	return list, nil
